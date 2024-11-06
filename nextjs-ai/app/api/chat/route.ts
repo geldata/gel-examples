@@ -1,6 +1,5 @@
 import { createClient } from "edgedb";
 import { createAI } from "@edgedb/ai";
-// import { EdgeDBStream, StreamingTextResponse } from "ai";
 
 export const dynamic = "force-dynamic";
 

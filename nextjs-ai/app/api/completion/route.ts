@@ -1,6 +1,5 @@
 import { createClient } from "edgedb";
 import { createAI } from "@edgedb/ai";
-import { resetEnv } from "@next/env";
 
 export const dynamic = "force-dynamic";
 
