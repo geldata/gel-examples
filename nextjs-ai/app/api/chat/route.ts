@@ -1,6 +1,6 @@
 import { createClient } from "edgedb";
 import { createAI } from "@edgedb/ai";
-import { EdgeDBStream, StreamingTextResponse } from "ai";
+// import { EdgeDBStream, StreamingTextResponse } from "ai";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +26,6 @@ export async function POST(req: Request) {
   });
 
   const res = await booksAi.streamRag(query);
-  const stream = EdgeDBStream(res);
-  return new StreamingTextResponse(stream);
+  // const stream = EdgeDBStream(res);
+  // return new StreamingTextResponse(stream);
 }

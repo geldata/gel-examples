@@ -116,6 +116,49 @@ insert Book {
   );
 
   console.log(await client.query("select Book {**};"));
+
+  // Update some authors with their countries of origin
+  await client.query(`
+      update Author
+      filter .name = "Ariadne Thread"
+      set { country := "Uruguay" };
+    `);
+
+  await client.query(`
+      update Author
+      filter .name = "Caspian Rook"
+      set { country := "South Africa" };
+    `);
+
+  await client.query(`
+      update Author
+      filter .name = "Elara Thornwood"
+      set { country := "Ireland" };
+    `);
+
+  await client.query(`
+      update Author
+      filter .name = "Elena Marquez"
+      set { country := "Peru" };
+    `);
+
+  await client.query(`
+      update Author
+      filter .name = "Finn Barlow"
+      set { country := "Norway" };
+    `);
+
+  await client.query(`
+      update Author
+      filter .name = "Milo Vesper"
+      set { country := "Italy" };
+    `);
+
+  await client.query(`
+      update Author
+      filter .name = "Orion Ember"
+      set { country := "United Kingdom" };
+    `);
 }
 
 main();

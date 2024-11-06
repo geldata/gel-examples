@@ -1,11 +1,13 @@
 "use client";
-
+import { useState } from "react";
 import { useChat } from "ai/react";
+import LoadingDots from "./components/loadingDots";
 import { GPTLogo, RunIcon } from "./icons";
 
 export default function Home() {
-  const { messages, input, handleInputChange, handleSubmit, error } = useChat();
-
+  const { messages, input, handleInputChange, handleSubmit, error, isLoading } =
+    useChat();
+  console.log("messages", messages);
   return (
     <main className="flex min-h-screen flex-col items-center px-16 pt-[25vh] max-w-3xl mx-auto gap-4 pb-28">
       {!input && messages.length === 0 && (
@@ -17,20 +19,26 @@ export default function Home() {
       )}
       {messages.map((m) =>
         m.role === "user" ? (
-          <div
-            key={m.id}
-            className={`${"bg-[#43384a] text-white border border-[#765d86] p-4 self-end max-w-1/3 rounded-xl"}`}
-          >
-            {m.content}
+          <div className="relative w-full flex justify-end" key={m.id}>
+            <div
+              className={`${"bg-[#43384a] text-white border border-[#765d86] p-4 max-w-1/3 rounded-xl w-fit"}`}
+            >
+              {m.content}
+            </div>
+            {isLoading && (
+              <LoadingDots className="absolute -bottom-[22px] left-4" />
+            )}
           </div>
         ) : (
-          <div
-            key={m.id}
-            className={`${"bg-[#333333] text-gray-300 border border-[#3f3f3f] p-4 self-start max-w-1/3 rounded-xl"}`}
-          >
-            <div className="opacity-30 text-xs font-semibold">AI</div>
-            {m.content!}
-          </div>
+          m.content && (
+            <div
+              key={m.id}
+              className={`${"bg-[#333333] text-gray-300 border border-[#3f3f3f] p-4 self-start max-w-1/3 rounded-xl z-10"}`}
+            >
+              <div className="opacity-30 text-xs font-semibold">AI</div>
+              {m.content}
+            </div>
+          )
         )
       )}
       {error && (

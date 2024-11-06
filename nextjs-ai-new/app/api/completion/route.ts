@@ -1,5 +1,9 @@
-import { streamText } from "ai";
-import { edgedbRag } from "../../../../../edgedb-js/packages/edgedb-ai-sdk/dist";
+import { streamText, tool } from "ai";
+import { createClient } from "edgedb";
+import { z } from "zod";
+import { edgedbRag } from "../../../../../edgedb-js/packages/edgedb-rag-sdk/dist";
+
+const client = createClient();
 
 export async function POST(req: Request) {
   const { prompt } = await req.json();
@@ -7,32 +11,39 @@ export async function POST(req: Request) {
   const textModel = (await edgedbRag).languageModel("gpt-4-turbo-preview");
 
   const result = await streamText({
-    model: textModel.withSettings({ context: { query: "Book" } }),
+    model: textModel.withSettings({
+      context: { query: "Book" },
+    }),
     prompt,
+    tools: {
+      country: tool({
+        description: "Get the country of the author",
+        parameters: z.object({
+          author: z.string().describe("Author name to get the country for"),
+        }),
+        execute: getCountry,
+      }),
+    },
+    // Required to be > 1 in order for the Vercel SDK to execute tools.
+    maxSteps: 5,
   });
 
   return result.toDataStreamResponse();
 }
 
-// or
+async function getCountry({ author }: { author: string }) {
+  const res: { name: string; country: string } | null =
+    await client.querySingle(
+      `
+        select Author { name, country }
+        filter .name=<str>$author;`,
+      { author }
+    );
 
-// import { streamText } from "ai";
-// import { createClient } from "edgedb";
-// import { edgedbRag } from "../../../../../edgedb-js/packages/edgedb-ai-sdk/dist";
-
-// export const client = createClient();
-
-//   const edgedbRag = await createEdgeDBRag(client);
-//   const result = await streamText({
-//     model: edgedbRag.languageModel("gpt-4-turbo-preview", {
-//       context: { query: "Book" },
-//     }),
-//     prompt,
-//   });
-
-// Embedding example
-
-// const embeddingResult = await embed({
-//   model: edgedbRag.textEmbeddingModel("text-embedding-3-small"),
-//   value: "sunny day at the beach",
-// });
+  return res?.country
+    ? res
+    : {
+        ...res,
+        country: `There is no available data on the country of origin for ${author}.`,
+      };
+}

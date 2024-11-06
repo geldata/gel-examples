@@ -5,6 +5,7 @@ module default {
     required name: str {
       constraint exclusive;
     };
+    country: str;
     books := .<author[is Book]
   }
 
@@ -13,6 +14,6 @@ module default {
     required author: Author;
     required summary: str;
     deferred index ext::ai::index(embedding_model := 'text-embedding-3-small')
-      on (.summary);
+      on (.title ++ ": " ++ .summary);
   }
 }

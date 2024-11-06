@@ -1,24 +1,76 @@
 "use client";
 
-import { useCompletion } from "ai/react";
+import { useState } from "react";
+import LoadingDots from "../components/loadingDots";
 import { RunIcon, GPTLogo } from "../icons";
-import { useEffect } from "react";
 
-export default function Chat() {
-  const {
-    completion,
-    input,
-    setInput,
-    handleInputChange,
-    handleSubmit,
-    error,
-  } = useCompletion();
+export default function Completion() {
+  const [input, setInput] = useState("");
+  const [completion, setCompletion] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  console.log("com", completion);
-  useEffect(() => setInput(""), []);
+  const handleInputChange = (ev: React.ChangeEvent<HTMLInputElement>) => {
+    setInput(ev.target.value);
+  };
 
-  const onSubmit = (ev: any) => {
-    handleSubmit(ev), setInput("");
+  const onSubmit = async (ev: React.FormEvent) => {
+    ev.preventDefault();
+
+    if (!input.trim()) return;
+
+    setCompletion("");
+    setLoading(true);
+
+    try {
+      setError(null);
+
+      const response = await fetch("/api/completion", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ prompt: input }),
+      });
+
+      const reader = response.body!.getReader();
+      const decoder = new TextDecoder();
+
+      setLoading(false);
+      setInput("");
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        setCompletion((prev) => {
+          const chunk = decoder.decode(value);
+          const lines = chunk.split("\n");
+          lines.forEach((line) => {
+            // every chunk has an event line and a data line with the type same as the event
+            if (line.startsWith("data:")) {
+              const data = JSON.parse(line.replace("data: ", "").trim());
+
+              // the text content is stored in content_block_delta event
+              if (data.type === "content_block_delta") {
+                prev += data.delta.text;
+              }
+            }
+          });
+
+          return prev;
+        });
+      }
+    } catch (err: unknown) {
+      if (typeof err === "string") {
+        setError(`Error: ${err}`);
+      } else if (err instanceof Error) {
+        setError(`Error: ${err.message}`);
+      } else {
+        console.log("An unknown error has occured: ", err);
+        setError("An unknown error has occured.");
+      }
+    }
   };
 
   return (
@@ -35,9 +87,10 @@ export default function Chat() {
           role="alert"
         >
           <strong className="font-bold">Error: </strong>
-          <span className="block sm:inline">{error.message}</span>
+          <span className="block sm:inline">{error}</span>
         </div>
       )}
+      {loading && <LoadingDots />}
       <p className={`${"text-gray-300 max-w-1/3"}`}>{completion}</p>
 
       <form className="fixed bottom-8 w-full max-w-[640px]" onSubmit={onSubmit}>

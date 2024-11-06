@@ -1,6 +1,6 @@
 import { createClient } from "edgedb";
 import { createAI } from "@edgedb/ai";
-import { EdgeDBStream, StreamingTextResponse } from "ai";
+import { resetEnv } from "@next/env";
 
 export const dynamic = "force-dynamic";
 
@@ -14,8 +14,6 @@ const booksAi = gpt4Ai.withContext({ query: "Book" });
 
 export async function POST(req: Request) {
   const { prompt } = await req.json();
-  const res = await booksAi.streamRag(prompt);
 
-  const stream = EdgeDBStream(res);
-  return new StreamingTextResponse(stream);
+  return booksAi.streamRag(prompt);
 }

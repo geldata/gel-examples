@@ -7,14 +7,15 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "seed": "tsx seed.ts"
+    "seed": "tsx seed.ts",
+    "test-generate": "tsx generateTextExamples/index.ts",
+    "test-stream": "tsx streamTextExamples/index.ts"
   },
   "dependencies": {
-    "@ai-sdk/react": "^0.0.62",
     "@edgedb/ai": "file:../../edgedb-js/packages/ai",
-    "@edgedb/ai-sdk": "file:../../edgedb-js/packages/edgedb-ai-sdk",
+    "@edgedb/rag-sdk": "file:../../edgedb-js/packages/edgedb-rag-sdk",
     "@next/env": "^14.2.3",
-    "ai": "latest",
+    "ai": "3.4.32",
     "edgedb": "^1.5.0",
     "eventsource-parser": "^1.1.2",
     "next": "^14.2.3",
@@ -22,8 +23,8 @@
     "react-dom": "^18"
   },
   "devDependencies": {
-    "@types/node": "^20",
-    "@types/react": "^18",
+    "@types/node": "^20.17.4",
+    "@types/react": "^18.3.12",
     "@types/react-dom": "^18",
     "eslint": "^8",
     "eslint-config-next": "14.2.3",
@@ -31,6 +32,5 @@
     "tailwindcss": "^3.4.1",
     "tsx": "^4.8.2",
     "typescript": "^5"
-  },
-  "packageManager": "yarn@4.2.1+sha256.15ce76682a8cd2090257b883cd69c637925b29573f9573e8403ec227d5ab6815"
+  }
 }

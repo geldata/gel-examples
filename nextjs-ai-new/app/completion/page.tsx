@@ -1,23 +1,25 @@
 "use client";
 
 import { useCompletion } from "ai/react";
-import { RunIcon, GPTLogo } from "../icons";
 import { useEffect, useState } from "react";
+import { RunIcon, GPTLogo } from "../icons";
+import LoadingDots from "../components/loadingDots";
 
 export default function Completion() {
   const [question, setQuestion] = useState("");
   const {
     completion,
-    setCompletion,
     input,
     setInput,
     error,
     handleInputChange,
     handleSubmit,
+    isLoading,
   } = useCompletion();
 
   useEffect(() => {
     if (completion && input) {
+      setQuestion(input);
       setInput("");
     }
   }, [completion]);
@@ -39,12 +41,16 @@ export default function Completion() {
           <span className="block sm:inline">{error.message}</span>
         </div>
       )}
-      {completion && (
-        <div className="text-left w-full">
-          <p className="mb-4">Q: {question}</p>
-          <p className={`${"text-gray-300 max-w-1/3"}`}>A: {completion}</p>
-        </div>
-      )}
+      <div className="text-left w-full">
+        {isLoading && !completion && <LoadingDots className="relative top-2" />}
+        {completion && (
+          <div>
+            <p className="mb-4">Q: {question}</p>
+            <p className={`${"text-gray-300 max-w-1/3"}`}>A: {completion}</p>
+          </div>
+        )}
+      </div>
+
       <form
         className="fixed bottom-8 w-full max-w-[640px]"
         onSubmit={handleSubmit}
@@ -52,11 +58,7 @@ export default function Completion() {
         <input
           className="border pl-4 py-2.5 rounded-xl border-neutral-700 outline-none w-[676px] text-[#bfbfbf] placeholder:text-[#666] focus:border-neutral-600 bg-[#191919] shadow-[0px_34px_0px_0px_#191919;] -ml-3"
           placeholder="Ask a question..."
-          onChange={(e) => {
-            setQuestion(input);
-            setCompletion("");
-            handleInputChange(e);
-          }}
+          onChange={handleInputChange}
           value={input}
         />
         <button className={`absolute -right-1 top-[12px]`}>
