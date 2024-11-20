@@ -159,6 +159,22 @@ insert Book {
       filter .name = "Orion Ember"
       set { country := "United Kingdom" };
     `);
+
+  // update the default prompt content
+  await client.query(`
+    update ext::ai::ChatPrompt 
+    filter .name = 'builtin::rag-default'
+    set { messages := (
+      insert ext::ai::ChatPromptMessage {
+        participant_role := ext::ai::ChatParticipantRole.System,
+        content:= "You are an expert Q&A system.
+          Always answer questions based on the provided context information. 
+          If user asks about someone's country always require a tool call.
+          Context information is below:
+          {context}",
+      }
+    )};
+  `);
 }
 
 main();
