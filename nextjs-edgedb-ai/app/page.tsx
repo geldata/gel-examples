@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { GPTLogo, RunIcon } from "./icons";
 import { EdgeDBAssistantMessage, EdgeDBUserMessage } from "@edgedb/ai";
+import LoadingDots from "./components/loadingDots";
 
 export default function Home() {
   const [input, setInput] = useState("");
@@ -91,20 +92,27 @@ export default function Home() {
       )}
       {messages.map((m, index) =>
         m.role === "user" ? (
-          <div
-            key={index}
-            className={`${"bg-[#43384a] text-white border border-[#765d86] p-4 self-end max-w-1/3 rounded-xl"}`}
-          >
-            {m.content[0].text}
+          <div className="relative w-full flex justify-end" key={index}>
+            <div
+              key={index}
+              className={`${"bg-[#43384a] text-white border border-[#765d86] p-4 self-end max-w-1/3 rounded-xl"}`}
+            >
+              {m.content[0].text}
+            </div>
+            {loading && (
+              <LoadingDots className="absolute -bottom-[22px] left-4" />
+            )}
           </div>
         ) : (
-          <div
-            key={index}
-            className={`${"bg-[#333333] text-gray-300 border border-[#3f3f3f] p-4 self-start max-w-1/3 rounded-xl"}`}
-          >
-            <div className="opacity-30 text-xs font-semibold">AI</div>
-            {m.content!}
-          </div>
+          m.content && (
+            <div
+              key={index}
+              className={`${"bg-[#333333] text-gray-300 border border-[#3f3f3f] p-4 self-start max-w-1/3 rounded-xl"}`}
+            >
+              <div className="opacity-30 text-xs font-semibold">AI</div>
+              {m.content!}
+            </div>
+          )
         )
       )}
       {error && (

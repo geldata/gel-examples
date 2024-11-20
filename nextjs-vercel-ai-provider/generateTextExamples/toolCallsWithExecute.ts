@@ -9,20 +9,23 @@ import { edgedb } from "@edgedb/vercel-ai-provider";
 
 import "../envConfig";
 
-export async function main() {
-  const prompt1 = "Where is Ariadne Thread from?";
-  const prompt2 = "Where are Finn Barlow and Elena Marquez from?";
+const client = createClient();
 
-  console.log(
-    "\x1b[1m\x1b[33m%s\x1b[0m",
-    "Tools cals with execute func provided: \n"
-  );
+async function getCountry({ author }: { author: string }) {
+  const res: { name: string; country: string } | null =
+    await client.querySingle(
+      `
+        select Author { name, country }
+        filter .name=<str>$author;`,
+      { author }
+    );
 
-  console.log(`Q: ${prompt1}`);
-  console.log(`A: ${await answerPrompt(prompt1)}\n`);
-
-  console.log(`Q: ${prompt2}`);
-  console.log(`A: ${await answerPrompt(prompt2)}\n`);
+  return res?.country
+    ? res
+    : {
+        ...res,
+        country: `There is no available data on the country of origin for ${author}.`,
+      };
 }
 
 const model = "gpt-4-turbo-preview";
@@ -54,21 +57,18 @@ async function answerPrompt(prompt: string) {
   return res.text;
 }
 
-const client = createClient();
+export async function main() {
+  const prompt1 = "Where is Ariadne Thread from?";
+  const prompt2 = "Where are Finn Barlow and Elena Marquez from?";
 
-async function getCountry({ author }: { author: string }) {
-  const res: { name: string; country: string } | null =
-    await client.querySingle(
-      `
-        select Author { name, country }
-        filter .name=<str>$author;`,
-      { author }
-    );
+  console.log(
+    "\x1b[1m\x1b[33m%s\x1b[0m",
+    "Tools cals with execute func provided: \n"
+  );
 
-  return res?.country
-    ? res
-    : {
-        ...res,
-        country: `There is no available data on the country of origin for ${author}.`,
-      };
+  console.log(`Q: ${prompt1}`);
+  console.log(`A: ${await answerPrompt(prompt1)}\n`);
+
+  console.log(`Q: ${prompt2}`);
+  console.log(`A: ${await answerPrompt(prompt2)}\n`);
 }

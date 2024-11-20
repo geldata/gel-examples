@@ -11,7 +11,6 @@ export const client = createClient({ tlsSecurity: "insecure" });
 
 const gpt4Ai = createAI(client, {
   model: "gpt-4-turbo-preview",
-  prompt: { name: "builtin::rag-default" },
 });
 
 let booksAi = gpt4Ai.withContext({ query: "Book" });
@@ -29,7 +28,6 @@ export async function POST(req: Request) {
       messages: initialMessages,
       tools: [countryTool],
     })) {
-      console.log("chunk", chunk);
       // if it is content_block_delta text chunk (type==text_delta) enqueue the text, if it is
       // content_block_delta tool call chunk (type==tool_call_delta) add it to the toolCalls list
       if (chunk.type === "content_block_delta") {
@@ -45,8 +43,6 @@ export async function POST(req: Request) {
         toolCalls.push(chunk.content_block);
       }
     }
-    console.log("tool calls", toolCalls);
-    console.log("--");
 
     // call the tool function for every tool call and get results
     if (toolCalls.length > 0) {
@@ -161,51 +157,3 @@ function generateToolMessages(toolCalls: any[], results: any[]) {
 
   return messages;
 }
-
-const x = [
-  {
-    role: "system",
-    content:
-      "You are an expert Q&A system.\nAlways answer questions based on the provided context information. Never use prior knowledge.\nFollow these additional rules:\n1. Never directly reference the given context in your answer.\n2. Never include phrases like 'Based on the context, ...' or any similar phrases in your responses. 3. When the context does not provide information about the question, answer with 'No information available.'.\nContext information is below:\nThe Maze of Many: Written by Ariadne Thread: A labyrinth with doors leading to infinite worlds becomes a battleground for those seeking ultimate power.\nAshes of the Starry Sea: Written by Orion Ember: After the stars in the sky mysteriously vanish, a band of astronomers embark on a perilous journey to retrieve them.\nWhispers of the Forgotten City: Written by Elena Marquez: In the sprawling, labyrinthine city of Velloria, ancient secrets lie buried beneath cobblestone streets and candle-lit alleyways. Ivy Donovan, a young historian, stumbles upon a cryptic map that hints at the location of the legendary Sunken Library, believed to house texts lost since the city's mysterious decline centuries ago. As Ivy delves deeper into the city’s dark past, she must dodge shadowy figures who seek to keep the library's secrets hidden. Alongside an unlikely band of allies, Ivy's quest leads her through hidden passages, haunted catacombs, and forgotten ruins, where she discovers truths that could shake the foundations of her world. As they inch closer to uncovering the city's ancient mysteries, they realize some secrets might have been better left untouched.\nNightshade’s Promise: A forbidden forest filled with nightshade flowers promises eternal youth, but at a price that could be too perilous.\nThe Gilded Mirror: A cursed mirror reflects alternative realities, trapping its viewers in a labyrinth of their potential lives.\nGiven the context information above and not prior knowledge, answer the user query.",
-  },
-  { role: "user", content: "Query: where is ariadne from?\nAnswer: " },
-  { role: "user", content: [{ type: "text", text: "where is ariadne from?" }] },
-];
-
-const x2 = [
-  {
-    role: "system",
-    content:
-      "You are an expert Q&A system.\nAlways answer questions based on the provided context information. Never use prior knowledge.\nFollow these additional rules:\n1. Never directly reference the given context in your answer.\n2. Never include phrases like 'Based on the context, ...' or any similar phrases in your responses. 3. When the context does not provide information about the question, answer with 'No information available.'.\nContext information is below:\nThe Maze of Many: Written by Ariadne Thread: A labyrinth with doors leading to infinite worlds becomes a battleground for those seeking ultimate power.\nAshes of the Starry Sea: Written by Orion Ember: After the stars in the sky mysteriously vanish, a band of astronomers embark on a perilous journey to retrieve them.\nWhispers of the Forgotten City: Written by Elena Marquez: In the sprawling, labyrinthine city of Velloria, ancient secrets lie buried beneath cobblestone streets and candle-lit alleyways. Ivy Donovan, a young historian, stumbles upon a cryptic map that hints at the location of the legendary Sunken Library, believed to house texts lost since the city's mysterious decline centuries ago. As Ivy delves deeper into the city’s dark past, she must dodge shadowy figures who seek to keep the library's secrets hidden. Alongside an unlikely band of allies, Ivy's quest leads her through hidden passages, haunted catacombs, and forgotten ruins, where she discovers truths that could shake the foundations of her world. As they inch closer to uncovering the city's ancient mysteries, they realize some secrets might have been better left untouched.\nNightshade’s Promise: A forbidden forest filled with nightshade flowers promises eternal youth, but at a price that could be too perilous.\nThe Gilded Mirror: A cursed mirror reflects alternative realities, trapping its viewers in a labyrinth of their potential lives.\nGiven the context information above and not prior knowledge, answer the user query.",
-  },
-  { role: "user", content: "Query: where is ariadne from?\nAnswer: " },
-  { role: "user", content: [{ type: "text", text: "where is ariadne from?" }] },
-  {
-    role: "assistant",
-    content: "",
-    tool_calls: [
-      {
-        id: "call_Grl1weCfPvvypSPXuUzagktJ",
-        type: "function",
-        function: {
-          name: "getCountry",
-          arguments: '{"author":"Ariadne Thread"}',
-        },
-      },
-    ],
-  },
-  {
-    role: "tool",
-    content: '{"name":"Ariadne Thread","country":"Uruguay"}',
-    tool_call_id: "call_Grl1weCfPvvypSPXuUzagktJ",
-  },
-];
-
-const xx1 = [
-  {
-    role: "system",
-    content:
-      "You are an expert Q&A system.\nAlways answer questions based on the provided context information. Never use prior knowledge.\nFollow these additional rules:\n1. Never directly reference the given context in your answer.\n2. Never include phrases like 'Based on the context, ...' or any similar phrases in your responses. 3. When the context does not provide information about the question, answer with 'No information available.'.\nContext information is below:\nThe Maze of Many: Written by Ariadne Thread: A labyrinth with doors leading to infinite worlds becomes a battleground for those seeking ultimate power.\nAshes of the Starry Sea: Written by Orion Ember: After the stars in the sky mysteriously vanish, a band of astronomers embark on a perilous journey to retrieve them.\nWhispers of the Forgotten City: Written by Elena Marquez: In the sprawling, labyrinthine city of Velloria, ancient secrets lie buried beneath cobblestone streets and candle-lit alleyways. Ivy Donovan, a young historian, stumbles upon a cryptic map that hints at the location of the legendary Sunken Library, believed to house texts lost since the city's mysterious decline centuries ago. As Ivy delves deeper into the city’s dark past, she must dodge shadowy figures who seek to keep the library's secrets hidden. Alongside an unlikely band of allies, Ivy's quest leads her through hidden passages, haunted catacombs, and forgotten ruins, where she discovers truths that could shake the foundations of her world. As they inch closer to uncovering the city's ancient mysteries, they realize some secrets might have been better left untouched.\nNightshade’s Promise: A forbidden forest filled with nightshade flowers promises eternal youth, but at a price that could be too perilous.\nThe Gilded Mirror: A cursed mirror reflects alternative realities, trapping its viewers in a labyrinth of their potential lives.\nGiven the context information above and not prior knowledge, answer the user query.",
-  },
-  { role: "user", content: "Query: where is ariadne from?\nAnswer: " },
-];
