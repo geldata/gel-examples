@@ -13,7 +13,7 @@
     "@edgedb/ai": "file:../../edgedb-js/packages/ai",
     "@edgedb/generate": "file:../../edgedb-js/packages/generate",
     "@next/env": "^14.2.3",
-    "ai": "^3.4.17",
+    "ai": "^4.0.0",
     "edgedb": "^1.5.12",
     "eventsource-parser": "^1.1.2",
     "next": "^14.2.3",

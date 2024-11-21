@@ -86,7 +86,7 @@ async function answerPrompt(prompt: string) {
     }
   }
 
-  const { textStream } = await streamText({
+  const { textStream } = streamText({
     model: textModel.withSettings({
       context: { query: "Book" },
       prompt: {

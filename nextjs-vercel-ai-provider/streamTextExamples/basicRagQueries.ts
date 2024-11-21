@@ -14,7 +14,7 @@ const model = "gpt-4-turbo-preview";
 async function answerPrompt(prompt: string) {
   const textModel = (await edgedb).languageModel(model);
 
-  const { textStream } = await streamText({
+  const { textStream } = streamText({
     model: textModel.withSettings({
       context: { query: "Book" },
     }),

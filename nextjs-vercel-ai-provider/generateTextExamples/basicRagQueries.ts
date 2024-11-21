@@ -7,9 +7,9 @@ import { edgedb } from "@edgedb/vercel-ai-provider";
 
 import "../envConfig";
 
-const model = "gpt-4-turbo-preview";
+// const model = "gpt-4-turbo-preview";
 // const model = "mistral-large-latest";
-// const model = "claude-3-5-sonnet-20240620";
+const model = "claude-3-5-sonnet-20240620";
 
 async function answerPrompt(prompt: string) {
   const textModel = (await edgedb).languageModel(model);

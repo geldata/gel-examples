@@ -10,7 +10,7 @@ export async function POST(req: Request) {
 
   const textModel = (await edgedb).languageModel("gpt-4-turbo-preview");
 
-  const result = await streamText({
+  const result = streamText({
     model: textModel.withSettings({
       context: { query: "Book" },
     }),
