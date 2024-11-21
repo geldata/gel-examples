@@ -1,13 +1,14 @@
 import { createClient } from "edgedb";
+import { createAI } from "@edgedb/ai";
 import {
-  createAI,
-  EdgeDBAssistantMessage,
-  EdgeDBToolMessage,
-} from "@edgedb/ai";
+  countryTool,
+  getCountry,
+  generateToolMessages,
+} from "../getCountryTool";
 
 export const dynamic = "force-dynamic";
 
-export const client = createClient({ tlsSecurity: "insecure" });
+export const client = createClient();
 
 const gpt4Ai = createAI(client, {
   model: "gpt-4-turbo-preview",
@@ -51,7 +52,7 @@ export async function POST(req: Request) {
         // we only have one tool so using if statement is fine
         // if there are more tools, some toolMap object can be used
         if (call.name === "getCountry") {
-          let res = await getCountry(JSON.parse(call.args));
+          let res = await getCountry(client, JSON.parse(call.args).author);
           toolResults.push(res);
         }
       }
@@ -61,8 +62,7 @@ export async function POST(req: Request) {
         ...initialMessages,
         ...generateToolMessages(toolCalls, toolResults),
       ];
-      console.log("new messages", newMessages);
-      console.log("--");
+
       // recursively process the stream with the updated messages
       await processStream(newMessages, controller);
     }
@@ -89,71 +89,4 @@ export async function POST(req: Request) {
       "Cache-Control": "no-cache",
     },
   });
-}
-
-const countryTool = {
-  type: "function",
-  function: {
-    name: "getCountry",
-    description: "Get the country of the author",
-    parameters: {
-      type: "object",
-      properties: {
-        author: {
-          type: "string",
-          description: "Author name to get the country for.",
-        },
-      },
-      required: ["author"],
-    },
-  },
-};
-
-async function getCountry({ author }: { author: string }) {
-  const res: { name: string; country: string } | null =
-    await client.querySingle(
-      `
-        select Author { name, country }
-        filter .name=<str>$author;`,
-      { author }
-    );
-
-  return res?.country
-    ? res
-    : {
-        ...res,
-        country: `There is no available data on the country of origin for ${author}.`,
-      };
-}
-
-function generateToolMessages(toolCalls: any[], results: any[]) {
-  let messages: (EdgeDBAssistantMessage | EdgeDBToolMessage)[] = [];
-
-  toolCalls.forEach((call, i) => {
-    messages.push(
-      ...[
-        {
-          role: "assistant" as const,
-          content: "",
-          tool_calls: [
-            {
-              id: call.id,
-              type: "function" as const,
-              function: {
-                name: call.name,
-                arguments: call.args,
-              },
-            },
-          ],
-        },
-        {
-          role: "tool" as const,
-          content: JSON.stringify(results[i]),
-          tool_call_id: call.id,
-        },
-      ]
-    );
-  });
-
-  return messages;
 }
