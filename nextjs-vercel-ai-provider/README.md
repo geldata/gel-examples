@@ -1,6 +1,6 @@
 # Chat App with EdgeDB AI and Vercel AI SDK
 
-This is an example project built with [Next.js](https://nextjs.org/) to showcase the use of [EdgeDB's AI](https://docs.edgedb.com/ai) features with the [Vercel AI SDK](https://sdk.vercel.ai/docs/introduction). The [Edgedb provider for Vercel AI](https://docs.edgedb.com/ai/vercel-ai-provider) is used. The application demonstrates a chat app that allows users to query a digital library of imaginary books. Users can ask about books, their authors, and related details, leveraging the EdgeDB database to store and retrieve the data, and embeddings. For the LLM models, you can use any of the `OpenAI`, `Mistral`, or `Anthropic` models that EdgeDB AI supports.
+This is an example project built with [Next.js](https://nextjs.org/) to showcase the use of [EdgeDB's AI](https://docs.edgedb.com/ai) features with the [Vercel AI SDK](https://sdk.vercel.ai/docs/introduction). The [Edgedb provider](https://docs.edgedb.com/ai/vercel-ai-provider) for Vercel AI is used. The application demonstrates a chat app that allows users to query a digital library of imaginary books. Users can ask about books, their authors, and related details, leveraging the EdgeDB database to store and retrieve the data, and embeddings. For the LLM models, you can use any of the `OpenAI`, `Mistral`, or `Anthropic` models that EdgeDB AI supports.
 
 ## Getting Started
 

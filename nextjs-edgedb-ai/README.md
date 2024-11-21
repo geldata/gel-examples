@@ -49,7 +49,8 @@ A standalone query without persistent chat history. Each question is independent
 ### Function calling
 
 EdgeDB AI extension supports function calling. In this project we defined `getCountry` tool which is utilized in both the chat and completion routes.
-This tool retrieves an author's country of origin from the database. For example, if a user asks, **"Where is Ariadne from?"**, the getCountry tool should be invoked.  
+This tool retrieves an author's country of origin from the database. For example, if a user asks, **"Where is Ariadne from?"**, the getCountry tool should be invoked.
+
 The `processStream` function is responsible for parsing response chunks. When a tool call response is detected, the function executes the corresponding tool, updates the messages array with the tool's results, and provides the updated array back to the AI.
 
 **NOTE**: It is advisable to create a system query in a way that ensures it is aware of the available tools and understands when to call each tool. We achieved this in the seed script by updating the `builtin::rag-default` prompt. However, you can also update this prompt using the EdgeDB UI or via the REPL. Additionally, you can create a new prompt for this purpose using the UI or the REPL with an `INSERT` query.
