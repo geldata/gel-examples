@@ -1,5 +1,6 @@
 import { useLoaderData, Link, useActionData } from "@remix-run/react";
 import auth from "~/services/auth.server";
+import { UserError } from "@edgedb/auth-remix/server";
 import { BackIcon } from "../icons";
 import { type ActionFunctionArgs, json } from "@remix-run/node";
 import ForgotPasswordForm from "~/components/auth/ForgotPasswordForm";
@@ -48,7 +49,13 @@ export async function action({ request }: ActionFunctionArgs) {
     request,
     async ({ error }) => {
       if (error) {
-        return json({ error: error.message, message: null });
+        return json({
+          error:
+            error instanceof UserError
+              ? `Error sending password reset: ${error.message}`
+              : `Unknown error occurred sending password reset`,
+          message: null,
+        });
       } else {
         const email = (await request.clone().formData())
           .get("email")!
