@@ -1,6 +1,6 @@
 import { fail, redirect } from "@sveltejs/kit";
+import { UserError } from "@edgedb/auth-sveltekit/server";
 import { createUser } from "$lib/server/utils";
-import { parseError } from "$lib/utils";
 import type { Actions } from "./$types";
 
 export const load = async ({ locals }) => ({
@@ -18,7 +18,9 @@ export const actions = {
       };
     } catch (e) {
       return fail(400, {
-        error: `Error signing up: ${parseError(e)}`,
+        error: `Error signing up: ${
+          e instanceof Error ? e.message : String(e)
+        }`,
       });
     }
   },
@@ -40,7 +42,10 @@ export const actions = {
       await createUser({ client, tokenData });
     } catch (e) {
       return fail(400, {
-        error: `Error signing up: ${parseError(e)}`,
+        error:
+          e instanceof UserError
+            ? `Error signing up: ${e.message}`
+            : `Unknown error occurred signing up`,
       });
     }
 
