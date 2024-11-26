@@ -10,7 +10,9 @@ module default {
   }
 
   type Book {
-    required title: str;
+    required title: str {
+           constraint exclusive;
+    };
     required author: Author;
     required summary: str;
     deferred index ext::ai::index(embedding_model := 'text-embedding-3-small')

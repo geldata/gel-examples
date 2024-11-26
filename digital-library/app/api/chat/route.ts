@@ -9,14 +9,21 @@ export async function POST(req: Request) {
   const requestData = await req.json();
 
   const textModel = (await edgedb).languageModel("gpt-4-turbo-preview");
-  // const textModel = (await edgedb).languageModel("mistral-large-latest");
-  // const textModel = (await edgedb).languageModel("claude-3-5-sonnet-20240620");
+
+  const { bookIds, messages } = requestData;
+
+  const context = {
+    query: bookIds
+      ? "select Book filter .id in array_unpack(<array<uuid>>$bookIds)"
+      : "Book",
+    variables: bookIds ? { bookIds } : undefined,
+  };
 
   const result = streamText({
     model: textModel.withSettings({
-      context: { query: "Book" },
+      context,
     }),
-    messages: requestData.messages,
+    messages,
     tools: {
       country: tool({
         description: "Get the country of the author",
