@@ -19,40 +19,6 @@ export async function POST(req: Request) {
     context,
   });
 
-  // const embModel = (await edgedb).textEmbeddingModel("text-embedding-3-small", {
-  //   dimensions: 200,
-  // });
-
-  // const { embedding } = await embed({
-  //   model: embModel,
-  //   value: "what does ariadne write about",
-  // });
-
-  // console.log("DIDI emb:", embedding);
-
-  // const { object } = await generateObject({
-  //   model: model,
-  //   schema: z.object({
-  //     title: z.string(),
-  //     summary: z.string(),
-  //   }),
-  //   prompt: "What does ariadne write about?",
-  // });
-  // console.log("didi object", object);
-
-  // const { partialObjectStream } = streamObject({
-  //   model: model,
-  //   schema: z.object({
-  //     title: z.string(),
-  //     summary: z.string(),
-  //   }),
-  //   prompt: "What does ariadne write about?",
-  // });
-
-  // for await (const partialObject of partialObjectStream) {
-  //   console.log(partialObject);
-  // }
-
   const result = streamText({
     model,
     messages,

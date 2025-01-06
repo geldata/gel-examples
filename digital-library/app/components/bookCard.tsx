@@ -49,7 +49,8 @@ export default function BookCard({
       </p>
       <button
         onClick={handleClick}
-        className={`w-7 h-7 rounded-full border flex items-center justify-center absolute -top-2 -right-2 transition-colors duration-200
+        className={`w-7 h-7 rounded-full border-[1.5px] flex items-center justify-center 
+          absolute -top-2 -right-2 transition-colors duration-200
             ${
               isActive
                 ? "bg-text border-text"
