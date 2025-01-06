@@ -8,14 +8,12 @@ export const client = createClient();
 export async function POST(req: Request) {
   const requestData = await req.json();
 
-  const textModel = (await edgedb).languageModel("gpt-4-turbo-preview");
-  // const textModel = (await edgedb).languageModel("mistral-large-latest");
-  // const textModel = (await edgedb).languageModel("claude-3-5-sonnet-20240620");
+  const model = (await edgedb).languageModel("gpt-4-turbo", {
+    context: { query: "Book" },
+  });
 
   const result = streamText({
-    model: textModel.withSettings({
-      context: { query: "Book" },
-    }),
+    model,
     messages: requestData.messages,
     tools: {
       country: tool({

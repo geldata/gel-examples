@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 export const client = createClient();
 
 const gpt4Ai = createAI(client, {
-  model: "gpt-4-turbo-preview",
+  model: "gpt-4o",
 });
 
 let booksAi = gpt4Ai.withContext({ query: "Book" });

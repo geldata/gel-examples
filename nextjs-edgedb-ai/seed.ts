@@ -13,7 +13,7 @@ configure current branch reset ext::ai::ProviderConfig;
 
 ## AI config
 configure current branch insert ext::ai::OpenAIProviderConfig {
-  secret := "${process.env.OPENAI_SECRET}",
+  secret := "${process.env.OPENAI_API_KEY}",
 };
 
 ## CORS config

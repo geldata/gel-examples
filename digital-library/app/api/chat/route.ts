@@ -1,28 +1,60 @@
 import { streamText, tool } from "ai";
-import { createClient } from "edgedb";
 import { z } from "zod";
 import { edgedb } from "../../../../../edgedb-js/packages/vercel-ai-provider/dist";
-
-export const client = createClient();
+import { getCountry } from "@/app/utils";
 
 export async function POST(req: Request) {
   const requestData = await req.json();
 
-  const textModel = (await edgedb).languageModel("gpt-4-turbo-preview");
-
   const { bookIds, messages } = requestData;
 
   const context = {
-    query: bookIds
+    query: bookIds.length
       ? "select Book filter .id in array_unpack(<array<uuid>>$bookIds)"
       : "Book",
     variables: bookIds ? { bookIds } : undefined,
   };
 
+  const model = (await edgedb).languageModel("gpt-4-turbo", {
+    context,
+  });
+
+  // const embModel = (await edgedb).textEmbeddingModel("text-embedding-3-small", {
+  //   dimensions: 200,
+  // });
+
+  // const { embedding } = await embed({
+  //   model: embModel,
+  //   value: "what does ariadne write about",
+  // });
+
+  // console.log("DIDI emb:", embedding);
+
+  // const { object } = await generateObject({
+  //   model: model,
+  //   schema: z.object({
+  //     title: z.string(),
+  //     summary: z.string(),
+  //   }),
+  //   prompt: "What does ariadne write about?",
+  // });
+  // console.log("didi object", object);
+
+  // const { partialObjectStream } = streamObject({
+  //   model: model,
+  //   schema: z.object({
+  //     title: z.string(),
+  //     summary: z.string(),
+  //   }),
+  //   prompt: "What does ariadne write about?",
+  // });
+
+  // for await (const partialObject of partialObjectStream) {
+  //   console.log(partialObject);
+  // }
+
   const result = streamText({
-    model: textModel.withSettings({
-      context,
-    }),
+    model,
     messages,
     tools: {
       country: tool({
@@ -38,21 +70,4 @@ export async function POST(req: Request) {
   });
 
   return result.toDataStreamResponse();
-}
-
-async function getCountry({ author }: { author: string }) {
-  const res: { name: string; country: string } | null =
-    await client.querySingle(
-      `
-        select Author { name, country }
-        filter .name=<str>$author;`,
-      { author }
-    );
-
-  return res?.country
-    ? res
-    : {
-        ...res,
-        country: `There is no available data on the country of origin for ${author}.`,
-      };
 }

@@ -1,34 +1,14 @@
-"use client";
-
-import { type Dispatch, type SetStateAction, useState, useEffect } from "react";
 import BookCard from "./bookCard";
 import { getBooks } from "../utils";
 
-export default function BookCards({
-  bookIds,
-  updateBookIds,
-}: {
-  bookIds: string[];
-  updateBookIds: Dispatch<SetStateAction<string[]>>;
-}) {
-  const [books, setBooks] = useState<any[]>([]);
-
-  useEffect(() => {
-    getBooks().then((books) => setBooks(books));
-  }, []);
+export default async function BookCards() {
+  const books = await getBooks();
 
   return (
-    <>
+    <aside className="mb-8 pt-10 w-[320px] p-3 px-4 pr-5 h-screen overflow-auto border-r border-border">
       {books.map((book) => (
-        <BookCard
-          key={book.id}
-          {...book}
-          addBookId={() => updateBookIds([...bookIds, book.id])}
-          removeBookId={() =>
-            updateBookIds(bookIds.filter((id) => id !== book.id))
-          }
-        />
+        <BookCard key={book.id} {...book} />
       ))}
-    </>
+    </aside>
   );
 }

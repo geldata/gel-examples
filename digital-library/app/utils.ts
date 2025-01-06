@@ -1,9 +1,25 @@
-import { createHttpClient } from "edgedb";
+"use server";
 
-const client = createHttpClient({
-  tlsSecurity: "insecure",
-  host: "localhost ",
-});
+import { createClient } from "edgedb";
+
+const client = createClient();
+
+export async function getCountry({ author }: { author: string }) {
+  const res: { name: string; country: string } | null =
+    await client.querySingle(
+      `
+        select Author { name, country }
+        filter .name=<str>$author;`,
+      { author }
+    );
+
+  return res?.country
+    ? res
+    : {
+        ...res,
+        country: `There is no available data on the country of origin for ${author}.`,
+      };
+}
 
 export const getBooks = async () => {
   const books: {

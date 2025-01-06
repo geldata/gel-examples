@@ -13,7 +13,7 @@ configure current branch reset ext::ai::ProviderConfig;
 
 ## AI config
 configure current branch insert ext::ai::OpenAIProviderConfig {
-  secret := "${process.env.OPENAI_SECRET}",
+  secret := "${process.env.OPENAI_API_KEY}",
 };
 
 ## CORS config
@@ -57,6 +57,18 @@ insert Book {
           title: "Echoes of the Void",
           summary:
             "Written by Milo Vesper: A cosmic adventure across starlit galaxies to uncover the mysteries of a universe humming with the echo of ancient civilizations.",
+        },
+        {
+          author_name: "Dr. Orion Sable",
+          title: "Through Infinite Realms",
+          summary:
+            "Written by Dr. Orion Sable: Through Infinite Realms offers a profound exploration of the universe's vastness, delving into the intricate dance of galaxies, the enigma of black holes, and the birth of stars in an ever-expanding cosmos. Dr. Sable, a renowned astrophysicist, guides readers through the latest discoveries in cosmology, unraveling the complexities of space-time and the fundamental forces that shape our universe. The book combines rigorous scientific analysis with accessible explanations, making it an enlightening read for both experts and enthusiasts alike",
+        },
+        {
+          author_name: "Mycella Verdant",
+          title: "Fungal Futures: How Mushrooms Can Save the World",
+          summary:
+            "Written by Mycella Verdant: This book delves into the remarkable potential of fungi to address some of the planet's most pressing environmental challenges. Verdant examines how mushrooms can be harnessed for habitat regeneration, pollution remediation, and sustainable agriculture. The book highlights pioneering research, such as the use of oyster mushrooms to decompose toxic pollutants like oil and diesel, transforming contaminated sites into thriving ecosystems. Verdant also explores innovative applications of fungi in creating biodegradable materials and their role in carbon sequestration, offering a hopeful vision for a sustainable future.",
         },
         {
           author_name: "Sylvia Quill",
@@ -124,6 +136,18 @@ insert Book {
       filter .name = "Caspian Rook"
       set { country := "South Africa" };
     `);
+
+  await client.query(`
+    update Author
+    filter .name = "Orion Sable"
+    set { country := "Denmark" };
+  `);
+
+  await client.query(`
+    update Author
+    filter .name = "Mycella Verdant"
+    set { country := "Mexico" };
+  `);
 
   await client.query(`
       update Author

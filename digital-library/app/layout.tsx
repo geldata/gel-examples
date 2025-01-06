@@ -5,9 +5,8 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "EdgeDB Rag example app",
-  description:
-    "This is an example app that uses EdgeDb RAG with Vercel AI SDK. It showcases how to use both generateText and streamText with basic queris, and with tools",
+  title: "EdgeDBdigital library example app",
+  description: "This is an example app that uses EdgeDb AI with Vercel AI SDK.",
 };
 
 export default function RootLayout({

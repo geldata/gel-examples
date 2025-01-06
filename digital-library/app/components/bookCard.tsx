@@ -1,14 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useContext } from "react";
+import { BooksContext } from "../booksProvider";
 
 interface BookCardProps {
   id: string;
   title: string;
   author: string;
   summary: string;
-  addBookId: any;
-  removeBookId: any;
 }
 
 export default function BookCard({
@@ -16,23 +15,26 @@ export default function BookCard({
   title,
   author,
   summary,
-  addBookId,
-  removeBookId,
 }: BookCardProps) {
+  const bookIds = useContext(BooksContext)?.bookIds;
+  const setBookIds = useContext(BooksContext)?.setBookIds;
+
   const [isActive, setIsActive] = useState(false);
 
   function handleClick() {
-    if (isActive) {
-      removeBookId(id);
-    } else {
-      addBookId(id);
+    if (bookIds && setBookIds) {
+      if (isActive) {
+        setBookIds(bookIds?.filter((bookId) => bookId !== id));
+      } else {
+        setBookIds([...bookIds, id]);
+      }
     }
 
     setIsActive(!isActive);
   }
 
   return (
-    <div className="relative bg-[#181924] rounded-md mb-3 p-3 pt-2">
+    <div className="relative bg-elem rounded-md mb-3 p-3 pt-2">
       <p>{title}</p>
       <p className="text-sm mb-1">- {author}</p>
       <p
@@ -50,13 +52,13 @@ export default function BookCard({
         className={`w-7 h-7 rounded-full border flex items-center justify-center absolute -top-2 -right-2 transition-colors duration-200
             ${
               isActive
-                ? "bg-green border-green"
-                : "bg-transparent border-[#9696b8]"
+                ? "bg-text border-text"
+                : "bg-transparent border-[#CCCCCC]"
             }`}
       >
         <span
           className={`text-lg transition-colors duration-200 ${
-            isActive ? "text-[#181924]" : "text-action"
+            isActive ? "text-bg" : "text-[#CCCCCC]"
           }`}
         >
           +
