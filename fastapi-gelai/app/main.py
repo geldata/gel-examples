@@ -49,7 +49,7 @@ async def get_users(
 ) -> list[GetUsersResult] | GetUserByNameResult:
     """List all users or get a user by their username"""
     if username:
-        user = await get_user_by_name_query(db_client, username)
+        user = await get_user_by_name_query(db_client, name=username)
         if not user:
             raise HTTPException(
                 HTTPStatus.NOT_FOUND,
@@ -60,13 +60,13 @@ async def get_users(
         return await get_users_query(db_client)
 
 
-@app.get("/users/{username}/chats")
+@app.get("/chats")
 async def get_chats(
-    username: str, chat_id: str = Query(None)
+    username: str = Query(), chat_id: str = Query(None)
 ) -> list[GetChatsResult] | GetChatByIdResult:
     """List user's chats or get a chat by username and id"""
     if chat_id:
-        chat = await get_chat_by_id_query(db_client, username, chat_id)
+        chat = await get_chat_by_id_query(db_client, username=username, chat_id=chat_id)
         if not chat:
             raise HTTPException(
                 HTTPStatus.NOT_FOUND,
@@ -74,13 +74,15 @@ async def get_chats(
             )
         return chat
     else:
-        return await get_chats_query(db_client, username)
+        return await get_chats_query(db_client, username=username)
 
 
-@app.get("/users/{name}/chats/{chat_id}/messages")
-async def get_messages(username: str, chat_id: str) -> list[GetMessagesResult]:
+@app.get("/messages")
+async def get_messages(
+    username: str = Query(), chat_id: str = Query()
+) -> list[GetMessagesResult]:
     """Fetch all messages from a chat"""
-    return await get_messages_query(db_client, username, chat_id)
+    return await get_messages_query(db_client, username=username, chat_id=chat_id)
 
 
 @app.post("/search")

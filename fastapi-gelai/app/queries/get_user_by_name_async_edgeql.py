@@ -34,8 +34,8 @@ async def get_user_by_name(
     executor: edgedb.AsyncIOExecutor,
     *,
     name: str,
-) -> list[GetUserByNameResult]:
-    return await executor.query(
+) -> GetUserByNameResult | None:
+    return await executor.query_single(
         """\
         select User { name }
         filter .name = <str>$name;\

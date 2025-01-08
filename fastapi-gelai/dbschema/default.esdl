@@ -3,7 +3,7 @@ module default {
         role: str;
         body: str;
         timestamp: datetime {
-            default := datetime.current();
+            default := datetime_current();
         }
         multi sources: str;
     }
