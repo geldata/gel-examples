@@ -8,6 +8,7 @@ dependencies = [
     "beautifulsoup4>=4.12.3",
     "edgedb>=2.2.0",
     "fastapi[standard]>=0.115.6",
+    "httpx-sse>=0.4.0",
     "openai>=1.59.3",
     "python-dotenv>=1.0.1",
     "requests>=2.32.3",

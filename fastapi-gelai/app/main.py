@@ -1,10 +1,11 @@
 from fastapi import FastAPI, Query, HTTPException
 from pydantic import BaseModel
 from http import HTTPStatus
-from .searcher import fetch_text_results
+from .searcher import fetch_web_sources
 from openai import OpenAI
 from dotenv import load_dotenv
 from edgedb import create_async_client, ConstraintViolationError
+from edgedb.ai import create_async_ai, AsyncEdgeDBAI
 
 from .queries.get_users_async_edgeql import get_users as get_users_query, GetUsersResult
 from .queries.get_user_by_name_async_edgeql import (
@@ -31,6 +32,10 @@ from .queries.create_chat_async_edgeql import (
 from .queries.add_message_async_edgeql import (
     add_message as add_message_query,
 )
+from .queries.search_chats_async_edgeql import (
+    search_chats as search_chats_query,
+)
+
 
 _ = load_dotenv()
 
@@ -47,6 +52,11 @@ class SearchResult(BaseModel):
     response: str | None = None
     sources: list[str] | None = None
     error: str | None = None
+
+
+class WebSource(BaseModel):
+    url: str | None = None
+    text: str | None = None
 
 
 @app.get("/")
@@ -118,10 +128,12 @@ async def post_messages(
     chat_id: str = Query(),
     query: str = Query(),
 ) -> SearchResult:
+    # 1. Fetch chat history
     chat_history = await get_messages_query(
         db_client, username=username, chat_id=chat_id
     )
 
+    # 2. Add incoming message to Gel
     _ = await add_message_query(
         db_client,
         username=username,
@@ -131,9 +143,25 @@ async def post_messages(
         chat_id=chat_id,
     )
 
-    web_sources = await find_sources(query, chat_history)
-    search_result = await generate_answer(query, chat_history, web_sources)
+    # 3. Generate a query and perform googling
+    search_query = await generate_search_query(query, chat_history)
+    web_sources = await search_web(search_query)
 
+    # 4. Fetch similar chats
+    db_ai: AsyncEdgeDBAI = await create_async_ai(db_client, model="gpt-4o-mini")
+    embedding = await db_ai.generate_embeddings(
+        search_query, model="text-embedding-3-small"
+    )
+    similar_chats = await search_chats_query(
+        db_client, username=username, embedding=embedding, limit=1
+    )
+
+    # 5. Generate answer
+    search_result = await generate_answer(
+        query, chat_history, web_sources, similar_chats
+    )
+
+    # 6. Add LLM response to Gel
     _ = await add_message_query(
         db_client,
         username=username,
@@ -143,17 +171,25 @@ async def post_messages(
         chat_id=chat_id,
     )
 
+    # 7. Send result back to the client
     return search_result
 
 
-async def find_sources(query: str, message_history: list[str]) -> dict[str, str]:
+async def generate_search_query(
+    query: str, message_history: list[GetMessagesResult]
+) -> str:
     system_prompt = (
         "You are a helpful assistant."
         + " Your job is to summarize chat history into a standalone google search query."
         + " Only provide the query itself as your response."
     )
 
-    formatted_history = "\n---\n".join(message for message in message_history)
+    formatted_history = "\n---\n".join(
+        [
+            f"{message.role}: {message.body} (sources: {message.sources})"
+            for message in message_history
+        ]
+    )
     prompt = f"Chat history: {formatted_history}\n\nUser message: {query} \n\n"
 
     completion = llm_client.chat.completions.create(
@@ -171,26 +207,42 @@ async def find_sources(query: str, message_history: list[str]) -> dict[str, str]
     )
 
     llm_response = completion.choices[0].message.content
-    search_results = [
-        {"url": url, "text": text} for url, text in fetch_text_results(llm_response)
-    ]
+    return llm_response
 
+
+async def search_web(query: str) -> list[WebSource]:
+    search_results = [
+        WebSource(url=url, text=text) for url, text in fetch_web_sources(query)
+    ]
     return search_results
 
 
 async def generate_answer(
-    query: str, chat_history: str, web_sources: dict[str, str]
+    query: str,
+    chat_history: list[GetMessagesResult],
+    web_sources: list[WebSource],
+    similar_chats: list[list[GetMessagesResult]],
 ) -> SearchResult:
     system_prompt = (
         "You are a helpful assistant that answers user's questions"
-        + " by finding relevant information in web search results"
+        + " by finding relevant information in web search results."
+        + " You can reference previous conversation with the user that"
+        + " are provided to you, if they are relevant, by explicitly referring"
+        + " to them."
     )
 
     prompt = f"User search query: {query}\n\nWeb search results:\n"
 
     for i, source in enumerate(web_sources):
-        prompt += f"Result {i} (URL: {source['url']}):\n"
-        prompt += f"{source['text']}\n\n"
+        prompt += f"Result {i} (URL: {source.url}):\n"
+        prompt += f"{source.text}\n\n"
+
+    prompt += "Similar chats with the same user:\n"
+
+    for i, chat in enumerate(similar_chats):
+        prompt += f"Chat {i}: \n"
+        for message in chat.messages:
+            prompt += f"{message.role}: {message.body} (sources: {message.sources})\n"
 
     completion = llm_client.chat.completions.create(
         model="gpt-4o-mini",
@@ -208,7 +260,7 @@ async def generate_answer(
 
     llm_response = completion.choices[0].message.content
     search_result = SearchResult(
-        response=llm_response, sources=[source["url"] for source in web_sources]
+        response=llm_response, sources=[source.url for source in web_sources]
     )
 
     return search_result

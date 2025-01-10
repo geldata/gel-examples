@@ -1,3 +1,5 @@
+using extension ai;
+
 module default {
     type Message {
         role: str;
@@ -6,6 +8,9 @@ module default {
             default := datetime_current();
         }
         multi sources: str;
+
+        deferred index ext::ai::index(embedding_model := 'text-embedding-3-small')
+            on (.body);
     }
 
     type ChatHistory {

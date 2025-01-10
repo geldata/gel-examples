@@ -71,7 +71,7 @@ def extract_text_from_url(url: str) -> str:
         return ""
 
 
-def fetch_text_results(query: str, limit: int = 5) -> list[tuple[str, str]]:
+def fetch_web_sources(query: str, limit: int = 5) -> list[tuple[str, str]]:
     """
     Perform search and extract text from results.
     Returns list of (url, text_content) tuples.
