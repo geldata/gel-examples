@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from edgedb import create_async_client, ConstraintViolationError
 from edgedb.ai import create_async_ai, AsyncEdgeDBAI
 
-from .searcher import fetch_web_sources
+from .web import fetch_web_sources
 from .queries.get_users_async_edgeql import get_users as get_users_query, GetUsersResult
 from .queries.get_user_by_name_async_edgeql import (
     get_user_by_name as get_user_by_name_query,
@@ -126,9 +126,9 @@ async def get_messages(
 
 @app.post("/messages", status_code=HTTPStatus.CREATED)
 async def post_messages(
+    search_terms: SearchTerms,
     username: str = Query(),
     chat_id: str = Query(),
-    query: str = Query(),
 ) -> SearchResult:
     # 1. Fetch chat history
     chat_history = await get_messages_query(
@@ -140,13 +140,13 @@ async def post_messages(
         gel_client,
         username=username,
         message_role="user",
-        message_body=query,
+        message_body=search_terms.query,
         sources=[],
         chat_id=chat_id,
     )
 
     # 3. Generate a query and perform googling
-    search_query = await generate_search_query(query, chat_history)
+    search_query = await generate_search_query(search_terms.query, chat_history)
     web_sources = await search_web(search_query)
 
     # 4. Fetch similar chats
@@ -160,7 +160,7 @@ async def post_messages(
 
     # 5. Generate answer
     search_result = await generate_answer(
-        query, chat_history, web_sources, similar_chats
+        search_terms.query, chat_history, web_sources, similar_chats
     )
 
     # 6. Add LLM response to Gel
@@ -245,7 +245,6 @@ async def generate_answer(
         prompt += f"Chat {i}: \n"
         for message in chat.messages:
             prompt += f"{message.role}: {message.body} (sources: {message.sources})\n"
-
 
     completion = llm_client.chat.completions.create(
         model="gpt-4o-mini",

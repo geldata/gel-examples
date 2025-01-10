@@ -10,6 +10,7 @@ dependencies = [
     "fastapi[standard]>=0.115.6",
     "httpx-sse>=0.4.0",
     "openai>=1.59.3",
+    "pytest>=8.3.4",
     "python-dotenv>=1.0.1",
     "requests>=2.32.3",
 ]
