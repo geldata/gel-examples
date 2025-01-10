@@ -1,12 +1,12 @@
 from fastapi import FastAPI, Query, HTTPException
 from pydantic import BaseModel
 from http import HTTPStatus
-from .searcher import fetch_web_sources
 from openai import OpenAI
 from dotenv import load_dotenv
 from edgedb import create_async_client, ConstraintViolationError
 from edgedb.ai import create_async_ai, AsyncEdgeDBAI
 
+from .searcher import fetch_web_sources
 from .queries.get_users_async_edgeql import get_users as get_users_query, GetUsersResult
 from .queries.get_user_by_name_async_edgeql import (
     get_user_by_name as get_user_by_name_query,
@@ -41,7 +41,7 @@ _ = load_dotenv()
 
 app = FastAPI()
 llm_client = OpenAI()
-db_client = create_async_client()
+gel_client = create_async_client()
 
 
 class SearchTerms(BaseModel):
@@ -70,7 +70,7 @@ async def get_users(
 ) -> list[GetUsersResult] | GetUserByNameResult:
     """List all users or get a user by their username"""
     if username:
-        user = await get_user_by_name_query(db_client, name=username)
+        user = await get_user_by_name_query(gel_client, name=username)
         if not user:
             raise HTTPException(
                 HTTPStatus.NOT_FOUND,
@@ -78,13 +78,13 @@ async def get_users(
             )
         return user
     else:
-        return await get_users_query(db_client)
+        return await get_users_query(gel_client)
 
 
 @app.post("/users", status_code=HTTPStatus.CREATED)
 async def post_user(username: str = Query()) -> CreateUserResult:
     try:
-        return await create_user_query(db_client, username=username)
+        return await create_user_query(gel_client, username=username)
     except ConstraintViolationError:
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST,
@@ -98,7 +98,9 @@ async def get_chats(
 ) -> list[GetChatsResult] | GetChatByIdResult:
     """List user's chats or get a chat by username and id"""
     if chat_id:
-        chat = await get_chat_by_id_query(db_client, username=username, chat_id=chat_id)
+        chat = await get_chat_by_id_query(
+            gel_client, username=username, chat_id=chat_id
+        )
         if not chat:
             raise HTTPException(
                 HTTPStatus.NOT_FOUND,
@@ -106,12 +108,12 @@ async def get_chats(
             )
         return chat
     else:
-        return await get_chats_query(db_client, username=username)
+        return await get_chats_query(gel_client, username=username)
 
 
 @app.post("/chats", status_code=HTTPStatus.CREATED)
 async def post_chat(username: str) -> CreateChatResult:
-    return await create_chat_query(db_client, username=username)
+    return await create_chat_query(gel_client, username=username)
 
 
 @app.get("/messages")
@@ -119,7 +121,7 @@ async def get_messages(
     username: str = Query(), chat_id: str = Query()
 ) -> list[GetMessagesResult]:
     """Fetch all messages from a chat"""
-    return await get_messages_query(db_client, username=username, chat_id=chat_id)
+    return await get_messages_query(gel_client, username=username, chat_id=chat_id)
 
 
 @app.post("/messages", status_code=HTTPStatus.CREATED)
@@ -130,12 +132,12 @@ async def post_messages(
 ) -> SearchResult:
     # 1. Fetch chat history
     chat_history = await get_messages_query(
-        db_client, username=username, chat_id=chat_id
+        gel_client, username=username, chat_id=chat_id
     )
 
     # 2. Add incoming message to Gel
     _ = await add_message_query(
-        db_client,
+        gel_client,
         username=username,
         message_role="user",
         message_body=query,
@@ -148,12 +150,12 @@ async def post_messages(
     web_sources = await search_web(search_query)
 
     # 4. Fetch similar chats
-    db_ai: AsyncEdgeDBAI = await create_async_ai(db_client, model="gpt-4o-mini")
+    db_ai: AsyncEdgeDBAI = await create_async_ai(gel_client, model="gpt-4o-mini")
     embedding = await db_ai.generate_embeddings(
         search_query, model="text-embedding-3-small"
     )
     similar_chats = await search_chats_query(
-        db_client, username=username, embedding=embedding, limit=1
+        gel_client, username=username, embedding=embedding, limit=1
     )
 
     # 5. Generate answer
@@ -163,7 +165,7 @@ async def post_messages(
 
     # 6. Add LLM response to Gel
     _ = await add_message_query(
-        db_client,
+        gel_client,
         username=username,
         message_role="assistant",
         message_body=search_result.response,
@@ -243,6 +245,7 @@ async def generate_answer(
         prompt += f"Chat {i}: \n"
         for message in chat.messages:
             prompt += f"{message.role}: {message.body} (sources: {message.sources})\n"
+
 
     completion = llm_client.chat.completions.create(
         model="gpt-4o-mini",
