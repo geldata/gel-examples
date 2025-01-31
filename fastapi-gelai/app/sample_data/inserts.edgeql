@@ -1,22 +1,16 @@
 # Create users first
 insert User {
     name := 'alice',
-    facts := 'Interested in machine learning and data science. Works as a research scientist.',
 };
-
 insert User {
     name := 'bob',
-    facts := 'Software engineer specializing in backend development. Enjoys reading about distributed systems.',
 };
-
 # Insert chat histories for Alice
-
 update User
 filter .name = 'alice'
 set {
     chats := {
-        (insert ChatHistory {
-            summary := 'Discussion about large language models and their applications',
+        (insert Chat {
             messages := {
                 (insert Message {
                     role := 'user',
@@ -32,8 +26,7 @@ set {
                 })
             }
         }),
-        (insert ChatHistory {
-            summary := 'Exploring reinforcement learning concepts',
+        (insert Chat {
             messages := {
                 (insert Message {
                     role := 'user',
@@ -51,15 +44,12 @@ set {
         })
     }
 };
-
-
 # Insert chat histories for Bob
 update User
 filter .name = 'bob'
 set {
     chats := {
-        (insert ChatHistory {
-            summary := 'Discussion about database sharding strategies',
+        (insert Chat {
             messages := {
                 (insert Message {
                     role := 'user',

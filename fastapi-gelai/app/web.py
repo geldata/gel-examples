@@ -1,48 +1,13 @@
 import requests
 from bs4 import BeautifulSoup
-from urllib.parse import quote_plus
 import time
 import re
+
+from googlesearch import search
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
 }
-
-
-def search_google(query: str, limit: int = 5) -> list[str]:
-    """
-    Perform a Google search and return top URLs.
-    """
-
-    encoded_query = quote_plus(query)  # encode the search query
-    search_url = f"https://www.google.com/search?q={encoded_query}"
-
-    try:
-        response = requests.get(search_url, headers=HEADERS)
-        response.raise_for_status()
-
-        soup = BeautifulSoup(response.text, "html.parser")
-        result_block = soup.find_all("div", attrs={"class": "g"})
-
-        search_results = []
-
-        for result in result_block:
-            link = result.find("a", href=True)
-            title = result.find("h3")
-
-            if link and title:
-                link = result.find("a", href=True)
-                if link["href"] not in search_results:
-                    search_results.append(link["href"])
-
-                    if len(search_results) >= limit:
-                        break
-
-        return search_results
-
-    except requests.exceptions.RequestException as e:
-        print(f"Error performing search: {e}")
-        return []
 
 
 def extract_text_from_url(url: str) -> str:
@@ -77,7 +42,7 @@ def fetch_web_sources(query: str, limit: int = 5) -> list[tuple[str, str]]:
     Returns list of (url, text_content) tuples.
     """
     results = []
-    urls = search_google(query, limit)
+    urls = search(query, num_results=limit)
 
     for url in urls:
         text = extract_text_from_url(url)
@@ -87,3 +52,7 @@ def fetch_web_sources(query: str, limit: int = 5) -> list[tuple[str, str]]:
         time.sleep(1)
 
     return results
+
+if __name__ == "__main__":
+    print(fetch_web_sources("edgedb database", limit=1)[0][0])
+

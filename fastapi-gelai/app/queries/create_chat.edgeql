@@ -1,4 +1,4 @@
-with new_chat := (insert ChatHistory)
+with new_chat := (insert Chat)
 select (
     update User filter .name = <str>$username
     set {
@@ -7,7 +7,3 @@ select (
 ) {
     new_chat_id := new_chat.id
 }
-
-
-
-    

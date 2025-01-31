@@ -37,7 +37,7 @@ async def create_chat(
 ) -> CreateChatResult | None:
     return await executor.query_single(
         """\
-        with new_chat := (insert ChatHistory)
+        with new_chat := (insert Chat)
         select (
             update User filter .name = <str>$username
             set {

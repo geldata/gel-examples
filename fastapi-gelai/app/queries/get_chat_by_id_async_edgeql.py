@@ -28,7 +28,6 @@ class NoPydanticValidation:
 class GetChatByIdResult(NoPydanticValidation):
     id: uuid.UUID
     messages: list[GetChatByIdResultMessagesItem]
-    summary: str | None
     user: list[GetChatByIdResultUserItem]
 
 
@@ -50,9 +49,8 @@ async def get_chat_by_id(
 ) -> GetChatByIdResult | None:
     return await executor.query_single(
         """\
-        select ChatHistory {
+        select Chat {
             messages,
-            summary,
             user := .<chats[is User],
         } filter .user.name = <str>$username and .id = <uuid>$chat_id;\
         """,

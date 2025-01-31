@@ -1,16 +1,19 @@
 from fastapi import FastAPI, Query, HTTPException
-from pydantic import BaseModel
 from http import HTTPStatus
+from pydantic import BaseModel
 from openai import OpenAI
 from dotenv import load_dotenv
 from edgedb import create_async_client, ConstraintViolationError
-from edgedb.ai import create_async_ai, AsyncEdgeDBAI
 
 from .web import fetch_web_sources
 from .queries.get_users_async_edgeql import get_users as get_users_query, GetUsersResult
 from .queries.get_user_by_name_async_edgeql import (
     get_user_by_name as get_user_by_name_query,
     GetUserByNameResult,
+)
+from .queries.create_user_async_edgeql import (
+    create_user as create_user_query,
+    CreateUserResult,
 )
 from .queries.get_chats_async_edgeql import get_chats as get_chats_query, GetChatsResult
 from .queries.get_chat_by_id_async_edgeql import (
@@ -21,10 +24,6 @@ from .queries.get_messages_async_edgeql import (
     get_messages as get_messages_query,
     GetMessagesResult,
 )
-from .queries.create_user_async_edgeql import (
-    create_user as create_user_query,
-    CreateUserResult,
-)
 from .queries.create_chat_async_edgeql import (
     create_chat as create_chat_query,
     CreateChatResult,
@@ -32,6 +31,7 @@ from .queries.create_chat_async_edgeql import (
 from .queries.add_message_async_edgeql import (
     add_message as add_message_query,
 )
+from edgedb.ai import create_async_ai, AsyncEdgeDBAI
 from .queries.search_chats_async_edgeql import (
     search_chats as search_chats_query,
 )
@@ -51,7 +51,6 @@ class SearchTerms(BaseModel):
 class SearchResult(BaseModel):
     response: str | None = None
     sources: list[str] | None = None
-    error: str | None = None
 
 
 class WebSource(BaseModel):
@@ -62,6 +61,15 @@ class WebSource(BaseModel):
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
+
+
+@app.post("/search")
+async def search(search_terms: SearchTerms) -> SearchResult:
+    web_sources = await search_web(search_terms.query)
+    response = await generate_answer(search_terms.query, web_sources)
+    return SearchResult(
+        response=response, sources=[source.url for source in web_sources]
+    )
 
 
 @app.get("/users")
@@ -213,10 +221,10 @@ async def generate_search_query(
 
 
 async def search_web(query: str) -> list[WebSource]:
-    search_results = [
-        WebSource(url=url, text=text) for url, text in fetch_web_sources(query)
+    web_sources = [
+        WebSource(url=url, text=text) for url, text in fetch_web_sources(query, limit=1)
     ]
-    return search_results
+    return web_sources
 
 
 async def generate_answer(

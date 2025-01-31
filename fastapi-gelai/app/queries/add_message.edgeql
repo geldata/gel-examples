@@ -1,6 +1,6 @@
 with
     user := (select User filter .name = <str>$username),
-update ChatHistory
+update Chat
 filter .id = <uuid>$chat_id and .<chats[is User] = user
 set {
     messages := assert_distinct(.messages union (
@@ -11,5 +11,3 @@ set {
         }
     ))
 }
-
-

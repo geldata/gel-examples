@@ -48,11 +48,9 @@ async def search_chats(
 ) -> list[SearchChatsResult]:
     return await executor.query(
         """\
-        # Find chats that contain messages similar to query
-
-        with 
+        with
             user := (select User filter .name = <str>$username),
-            chats := (select ChatHistory filter .<chats[is User] = user)
+            chats := (select Chat filter .<chats[is User] = user)
 
         select chats {
             distance := min(

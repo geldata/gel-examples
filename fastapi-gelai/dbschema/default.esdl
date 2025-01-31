@@ -11,18 +11,17 @@ module default {
 
         deferred index ext::ai::index(embedding_model := 'text-embedding-3-small')
             on (.body);
+
     }
 
-    type ChatHistory {
+    type Chat {
         multi messages: Message;
-        summary: str;
     }
 
     type User {
         name: str {
             constraint exclusive;
         }
-        multi chats: ChatHistory;
-        facts: str;
+        multi chats: Chat;
     }
 }
