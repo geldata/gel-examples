@@ -247,6 +247,11 @@ async def generate_answer(
         prompt += f"Result {i} (URL: {source.url}):\n"
         prompt += f"{source.text}\n\n"
 
+    prompt += "Chat history:\n"
+
+    for i, message in enumerate(chat_history):
+        prompt += f"{message.role}: {message.body} (sources: {message.sources})\n"
+
     prompt += "Similar chats with the same user:\n"
 
     for i, chat in enumerate(similar_chats):
