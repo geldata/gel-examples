@@ -34,6 +34,9 @@ class GetChatByIdResult(NoPydanticValidation):
 @dataclasses.dataclass
 class GetChatByIdResultMessagesItem(NoPydanticValidation):
     id: uuid.UUID
+    role: str | None
+    body: str | None
+    sources: list[str]
 
 
 @dataclasses.dataclass
@@ -50,7 +53,7 @@ async def get_chat_by_id(
     return await executor.query_single(
         """\
         select Chat {
-            messages,
+            messages: { role, body, sources } ,
             user := .<chats[is User],
         } filter .user.name = <str>$username and .id = <uuid>$chat_id;\
         """,

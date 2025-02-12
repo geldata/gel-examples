@@ -5,7 +5,7 @@ from openai import OpenAI
 from dotenv import load_dotenv
 from edgedb import create_async_client, ConstraintViolationError
 
-from .web import fetch_web_sources
+from .web import fetch_web_sources, WebSource
 from .queries.get_users_async_edgeql import get_users as get_users_query, GetUsersResult
 from .queries.get_user_by_name_async_edgeql import (
     get_user_by_name as get_user_by_name_query,
@@ -50,12 +50,8 @@ class SearchTerms(BaseModel):
 
 class SearchResult(BaseModel):
     response: str | None = None
-    sources: list[str] | None = None
-
-
-class WebSource(BaseModel):
-    url: str | None = None
-    text: str | None = None
+    search_query: str | None = None
+    sources: list[WebSource] | None = None
 
 
 @app.get("/")
@@ -168,7 +164,11 @@ async def post_messages(
 
     # 5. Generate answer
     search_result = await generate_answer(
-        search_terms.query, chat_history, web_sources, similar_chats
+        search_terms.query,
+        chat_history,
+        web_sources,
+        similar_chats,
+        search_query,
     )
 
     # 6. Add LLM response to Gel
@@ -177,7 +177,7 @@ async def post_messages(
         username=username,
         message_role="assistant",
         message_body=search_result.response,
-        sources=search_result.sources,
+        sources=[s.url for s in search_result.sources],
         chat_id=chat_id,
     )
 
@@ -190,7 +190,9 @@ async def generate_search_query(
 ) -> str:
     system_prompt = (
         "You are a helpful assistant."
-        + " Your job is to summarize chat history into a standalone google search query."
+        + " Your job is to extract a keyword search query"
+        + " from a chat between an AI and a human."
+        + " Make sure it's a single most relevant keyword to maximize matching."
         + " Only provide the query itself as your response."
     )
 
@@ -221,10 +223,8 @@ async def generate_search_query(
 
 
 async def search_web(query: str) -> list[WebSource]:
-    web_sources = [
-        WebSource(url=url, text=text) for url, text in fetch_web_sources(query, limit=1)
-    ]
-    return web_sources
+    raw_souces = fetch_web_sources(query, limit=30)
+    return [s for s in raw_souces if s.text is not None][:5]
 
 
 async def generate_answer(
@@ -232,10 +232,12 @@ async def generate_answer(
     chat_history: list[GetMessagesResult],
     web_sources: list[WebSource],
     similar_chats: list[list[GetMessagesResult]],
+    search_query: str,
 ) -> SearchResult:
     system_prompt = (
         "You are a helpful assistant that answers user's questions"
-        + " by finding relevant information in web search results."
+        + " by finding relevant information in HackerNews threads."
+        + " When answering the question, describe conversations that people have around the subject, provided to you as a context, or say i don't know if they are completely irrelevant."
         + " You can reference previous conversation with the user that"
         + " are provided to you, if they are relevant, by explicitly referring"
         + " to them."
@@ -275,7 +277,9 @@ async def generate_answer(
 
     llm_response = completion.choices[0].message.content
     search_result = SearchResult(
-        response=llm_response, sources=[source.url for source in web_sources]
+        response=llm_response,
+        sources=web_sources,
+        search_query=search_query,
     )
 
     return search_result

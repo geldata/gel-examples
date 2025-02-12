@@ -1,58 +1,83 @@
 import requests
-from bs4 import BeautifulSoup
-import time
-import re
-
-from googlesearch import search
-
-HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-}
+from pydantic import BaseModel
+from datetime import datetime
+import html
 
 
-def extract_text_from_url(url: str) -> str:
+class WebSource(BaseModel):
+    url: str | None = None
+    title: str | None = None
+    text: str | None = None
+
+
+def extract_comment_thread(
+    comment: dict,
+    max_depth: int = 3,
+    current_depth: int = 0,
+    max_children=3,
+) -> list[str]:
     """
-    Extract main text content from a webpage.
+    Recursively extract comments from a thread up to max_depth.
+    Returns a list of formatted comment strings.
     """
-    try:
-        response = requests.get(url, headers=HEADERS, timeout=10)
-        response.raise_for_status()
+    if not comment or current_depth > max_depth:
+        return []
 
-        soup = BeautifulSoup(response.text, "html.parser")
-
-        # Remove script and style elements
-        for element in soup(["script", "style", "header", "footer", "nav"]):
-            element.decompose()
-
-        # Get text and clean it up
-        text = soup.get_text(separator=" ")
-        # Remove extra whitespace
-        text = re.sub(r"\s+", " ", text).strip()
-
-        return text
-
-    except Exception as e:
-        print(f"Error extracting text from {url}: {e}")
-        return ""
-
-
-def fetch_web_sources(query: str, limit: int = 5) -> list[tuple[str, str]]:
-    """
-    Perform search and extract text from results.
-    Returns list of (url, text_content) tuples.
-    """
     results = []
-    urls = search(query, num_results=limit)
 
-    for url in urls:
-        text = extract_text_from_url(url)
-        if text:  # Only include if we got some text
-            results.append((url, text))
-        # Be nice to servers
-        time.sleep(1)
+    if comment["text"]:
+        timestamp = datetime.fromisoformat(comment["created_at"].replace("Z", "+00:00"))
+        author = comment["author"]
+        text = html.unescape(comment["text"])
+        formatted_comment = f"[{timestamp.strftime('%Y-%m-%d %H:%M')}] {author}: {text}"
+        results.append(("  " * current_depth) + formatted_comment)
+
+    if comment.get("children"):
+        for child in comment["children"][:max_children]:
+            child_comments = extract_comment_thread(child, max_depth, current_depth + 1)
+            results.extend(child_comments)
 
     return results
 
-if __name__ == "__main__":
-    print(fetch_web_sources("edgedb database", limit=1)[0][0])
 
+def fetch_web_sources(query: str, limit: int = 5) -> list[WebSource]:
+    search_url = "http://hn.algolia.com/api/v1/search_by_date"
+
+    response = requests.get(
+        search_url,
+        params={
+            "query": query,
+            "tags": "story",
+            "hitsPerPage": limit,
+            "page": 0,
+        },
+    )
+
+    response.raise_for_status()
+    search_result = response.json()
+
+    web_sources = []
+    for hit in search_result.get("hits", []):
+        item_url = f"https://hn.algolia.com/api/v1/items/{hit['story_id']}"
+        response = requests.get(item_url)
+        response.raise_for_status()
+        item_result = response.json()
+
+        site_url = f"https://news.ycombinator.com/item?id={hit['story_id']}"
+        title = hit["title"]
+        comments = extract_comment_thread(item_result)
+        text = "\n".join(comments) if len(comments) > 0 else None
+        web_sources.append(
+            WebSource(url=site_url, title=title, text=text)
+        )
+
+    return web_sources
+
+
+if __name__ == "__main__":
+    web_sources = fetch_web_sources("EdgeDB", limit=5)
+
+    for source in web_sources:
+        print(source.url)
+        print(source.title)
+        print(source.text)
