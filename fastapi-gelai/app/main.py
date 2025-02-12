@@ -52,6 +52,7 @@ class SearchResult(BaseModel):
     response: str | None = None
     search_query: str | None = None
     sources: list[WebSource] | None = None
+    similar_chats: list[str] | None = None
 
 
 @app.get("/")
@@ -240,7 +241,7 @@ async def generate_answer(
         + " When answering the question, describe conversations that people have around the subject, provided to you as a context, or say i don't know if they are completely irrelevant."
         + " You can reference previous conversation with the user that"
         + " are provided to you, if they are relevant, by explicitly referring"
-        + " to them."
+        + " to them by saying as we discussed in the past."
     )
 
     prompt = f"User search query: {query}\n\nWeb search results:\n"
@@ -256,10 +257,14 @@ async def generate_answer(
 
     prompt += "Similar chats with the same user:\n"
 
+    formatted_chats = []
     for i, chat in enumerate(similar_chats):
-        prompt += f"Chat {i}: \n"
+        formatted_chat = f"Chat {i}: \n"
         for message in chat.messages:
-            prompt += f"{message.role}: {message.body} (sources: {message.sources})\n"
+            formatted_chat += f"{message.role}: {message.body}\n"
+        formatted_chats.append(formatted_chat)
+
+    prompt += "\n".join(formatted_chats)
 
     completion = llm_client.chat.completions.create(
         model="gpt-4o-mini",
@@ -280,6 +285,7 @@ async def generate_answer(
         response=llm_response,
         sources=web_sources,
         search_query=search_query,
+        similar_chats=formatted_chats,
     )
 
     return search_result
