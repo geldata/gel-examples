@@ -173,9 +173,9 @@ async def post_messages(
         chat_history,
         web_sources,
         similar_chats,
-        search_query,
     )
-
+    search_result.search_query = search_query  # add search query to the output
+                                               # to see what the bot is searching for
     # 6. Add LLM response to Gel
     _ = await add_message_query(
         gel_client,
@@ -247,7 +247,6 @@ async def generate_answer(
     chat_history: list[GetMessagesResult],
     web_sources: list[WebSource],
     similar_chats: list[list[GetMessagesResult]],
-    search_query: str,
 ) -> SearchResult:
     system_prompt = (
         "You are a helpful assistant that answers user's questions"
@@ -288,7 +287,6 @@ async def generate_answer(
     search_result = SearchResult(
         response=llm_response,
         sources=web_sources,
-        search_query=search_query,
         similar_chats=formatted_chats,
     )
 
