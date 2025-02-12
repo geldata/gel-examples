@@ -1,7 +1,8 @@
 from fastapi import FastAPI, Query, HTTPException
 from http import HTTPStatus
+import requests
+import os
 from pydantic import BaseModel
-from openai import OpenAI
 from dotenv import load_dotenv
 from edgedb import create_async_client, ConstraintViolationError
 
@@ -40,7 +41,6 @@ from .queries.search_chats_async_edgeql import (
 _ = load_dotenv()
 
 app = FastAPI()
-llm_client = OpenAI()
 gel_client = create_async_client()
 
 
@@ -160,7 +160,11 @@ async def post_messages(
         search_query, model="text-embedding-3-small"
     )
     similar_chats = await search_chats_query(
-        gel_client, username=username, embedding=embedding, limit=1
+        gel_client,
+        username=username,
+        current_chat_id=chat_id,
+        embedding=embedding,
+        limit=1,
     )
 
     # 5. Generate answer
@@ -186,6 +190,27 @@ async def post_messages(
     return search_result
 
 
+def get_llm_completion(system_prompt: str, messages: list[dict[str, str]]) -> str:
+    api_key = os.getenv("OPENAI_API_KEY")
+    url = "https://api.openai.com/v1/chat/completions"
+    headers = {"Content-Type": "application/json", "Authorization": f"Bearer {api_key}"}
+
+    response = requests.post(
+        url,
+        headers=headers,
+        json={
+            "model": "gpt-4o-mini",
+            "messages": [
+                {"role": "developer", "content": system_prompt},
+                *messages,
+            ],
+        },
+    )
+    response.raise_for_status()
+    result = response.json()
+    return result["choices"][0]["message"]["content"]
+
+
 async def generate_search_query(
     query: str, message_history: list[GetMessagesResult]
 ) -> str:
@@ -205,21 +230,10 @@ async def generate_search_query(
     )
     prompt = f"Chat history: {formatted_history}\n\nUser message: {query} \n\n"
 
-    completion = llm_client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[
-            {
-                "role": "system",
-                "content": system_prompt,
-            },
-            {
-                "role": "user",
-                "content": prompt,
-            },
-        ],
+    llm_response = get_llm_completion(
+        system_prompt=system_prompt, messages=[{"role": "user", "content": prompt}]
     )
 
-    llm_response = completion.choices[0].message.content
     return llm_response
 
 
@@ -250,11 +264,6 @@ async def generate_answer(
         prompt += f"Result {i} (URL: {source.url}):\n"
         prompt += f"{source.text}\n\n"
 
-    prompt += "Chat history:\n"
-
-    for i, message in enumerate(chat_history):
-        prompt += f"{message.role}: {message.body} (sources: {message.sources})\n"
-
     prompt += "Similar chats with the same user:\n"
 
     formatted_chats = []
@@ -266,21 +275,16 @@ async def generate_answer(
 
     prompt += "\n".join(formatted_chats)
 
-    completion = llm_client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[
-            {
-                "role": "system",
-                "content": system_prompt,
-            },
-            {
-                "role": "user",
-                "content": prompt,
-            },
-        ],
+    messages = [
+        {"role": message.role, "content": message.body} for message in chat_history
+    ]
+    messages.append({"role": "user", "content": prompt})
+
+    llm_response = get_llm_completion(
+        system_prompt=system_prompt,
+        messages=messages,
     )
 
-    llm_response = completion.choices[0].message.content
     search_result = SearchResult(
         response=llm_response,
         sources=web_sources,

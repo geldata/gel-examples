@@ -1,6 +1,10 @@
 with
     user := (select User filter .name = <str>$username),
-    chats := (select Chat filter .<chats[is User] = user)
+    chats := (
+        select Chat 
+        filter .<chats[is User] = user 
+               and .id != <uuid>$current_chat_id
+    )
 
 select chats {
     distance := min(

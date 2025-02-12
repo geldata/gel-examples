@@ -43,6 +43,7 @@ async def search_chats(
     executor: edgedb.AsyncIOExecutor,
     *,
     username: str,
+    current_chat_id: uuid.UUID,
     limit: int,
     embedding: list[float],
 ) -> list[SearchChatsResult]:
@@ -50,7 +51,11 @@ async def search_chats(
         """\
         with
             user := (select User filter .name = <str>$username),
-            chats := (select Chat filter .<chats[is User] = user)
+            chats := (
+                select Chat 
+                filter .<chats[is User] = user 
+                       and .id != <uuid>$current_chat_id
+            )
 
         select chats {
             distance := min(
@@ -68,6 +73,7 @@ async def search_chats(
         limit <int64>$limit;\
         """,
         username=username,
+        current_chat_id=current_chat_id,
         limit=limit,
         embedding=embedding,
     )
