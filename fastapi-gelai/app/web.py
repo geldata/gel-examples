@@ -5,6 +5,8 @@ import html
 
 
 class WebSource(BaseModel):
+    """Type that stores search results."""
+
     url: str | None = None
     title: str | None = None
     text: str | None = None
@@ -25,12 +27,18 @@ def extract_comment_thread(
 
     results = []
 
+    # Get timestamp, author and the body of the comment,
+    # then pad it with spaces so that it's offset appropriately for its depth
+
     if comment["text"]:
         timestamp = datetime.fromisoformat(comment["created_at"].replace("Z", "+00:00"))
         author = comment["author"]
         text = html.unescape(comment["text"])
         formatted_comment = f"[{timestamp.strftime('%Y-%m-%d %H:%M')}] {author}: {text}"
         results.append(("  " * current_depth) + formatted_comment)
+
+    # If there're children comments, we are going to extract them too,
+    # and add them to the list.
 
     if comment.get("children"):
         for child in comment["children"][:max_children]:
@@ -41,8 +49,16 @@ def extract_comment_thread(
 
 
 def fetch_web_sources(query: str, limit: int = 5) -> list[WebSource]:
-    search_url = "http://hn.algolia.com/api/v1/search_by_date"
+    """
+    For a given query perform a full-text search for stories on Hacker News.
+    From each of the matched stories extract the comment thread and format it into a single string.
+    For each story return its title, url and comment thread.
+    """
+    search_url = (
+        "http://hn.algolia.com/api/v1/search_by_date?numericFilters=num_comments>0"
+    )
 
+    # Search for stories
     response = requests.get(
         search_url,
         params={
@@ -56,6 +72,7 @@ def fetch_web_sources(query: str, limit: int = 5) -> list[WebSource]:
     response.raise_for_status()
     search_result = response.json()
 
+    # For each search hit fetch and process the story
     web_sources = []
     for hit in search_result.get("hits", []):
         item_url = f"https://hn.algolia.com/api/v1/items/{hit['story_id']}"
@@ -67,15 +84,13 @@ def fetch_web_sources(query: str, limit: int = 5) -> list[WebSource]:
         title = hit["title"]
         comments = extract_comment_thread(item_result)
         text = "\n".join(comments) if len(comments) > 0 else None
-        web_sources.append(
-            WebSource(url=site_url, title=title, text=text)
-        )
+        web_sources.append(WebSource(url=site_url, title=title, text=text))
 
     return web_sources
 
 
 if __name__ == "__main__":
-    web_sources = fetch_web_sources("EdgeDB", limit=5)
+    web_sources = fetch_web_sources("edgedb", limit=5)
 
     for source in web_sources:
         print(source.url)

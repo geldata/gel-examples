@@ -238,8 +238,8 @@ async def generate_search_query(
 
 
 async def search_web(query: str) -> list[WebSource]:
-    raw_souces = fetch_web_sources(query, limit=30)
-    return [s for s in raw_souces if s.text is not None][:5]
+    raw_souces = fetch_web_sources(query, limit=5)
+    return [s for s in raw_souces if s.text is not None]
 
 
 async def generate_answer(
