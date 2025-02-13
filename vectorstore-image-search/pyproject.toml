@@ -1,0 +1,21 @@
+[project]
+name = "vectorstore-image-search"
+version = "0.1.0"
+description = "Image search using CLIP embeddings and Gel vectorstore"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "gel>=0.0.1",
+    "fastapi>=0.109.0",
+    "uvicorn>=0.27.0",
+    "torch>=2.0.0",
+    "clip @ git+https://github.com/openai/CLIP.git",
+    "Pillow>=10.0.0",
+    "python-multipart>=0.0.6",
+    "openai>=1.0.0",
+    "python-dotenv>=1.0.0",
+]
+
+[tool.black]
+line-length = 80
+target-version = ["py312"] 

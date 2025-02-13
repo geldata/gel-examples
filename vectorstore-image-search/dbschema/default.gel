@@ -1,0 +1,14 @@
+using extension pgvector;
+using extension vectorstore;
+
+module default {
+    scalar type vector_512 extending ext::pgvector::vector<512>;
+
+    type Image extending ext::vectorstore::BaseRecord {
+        overloaded property embedding: vector_512;
+        
+        index ext::pgvector::hnsw_cosine(
+            m := 16, ef_construction := 128
+        ) on (.embedding);
+    };
+};
