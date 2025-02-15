@@ -21,3 +21,8 @@ DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 if not OPENAI_API_KEY:
     raise ValueError("OPENAI_API_KEY not found in environment variables")
+
+# Needed to upload images to UploadThing.
+UPLOADTHING_TOKEN = os.getenv("UPLOADTHING_TOKEN")
+if not UPLOADTHING_TOKEN:
+    raise ValueError("UPLOADTHING_TOKEN not found in environment variables")

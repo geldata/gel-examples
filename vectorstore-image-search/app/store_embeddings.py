@@ -1,16 +1,23 @@
 import torch
 import clip
 import base64
+import contextlib
 from pathlib import Path
 from PIL import Image
 from typing import List
 from gel.ai import RecordToInsert
-from .vector_store import vector_store
-from .constants import IMAGES_DIR, DEVICE
+from upyloadthing.client import UTApi
+from upyloadthing.schemas import UTApiOptions
+from vector_store import vector_store
+from constants import IMAGES_DIR, DEVICE, UPLOADTHING_TOKEN
 
 
 # Load CLIP model on device.
 model, preprocess = clip.load("ViT-B/32", device=DEVICE)
+
+
+# Initialize uploadthing client.
+api = UTApi(UTApiOptions(token=UPLOADTHING_TOKEN))
 
 
 def load_images(image_paths: List[str]) -> torch.Tensor:
@@ -40,6 +47,16 @@ def encode_image_base64(image_path):
         return base64.b64encode(image_file.read()).decode("utf-8")
 
 
+def upload_to_uploadthing(image_paths):
+    """Upload an image to UploadThing and return the URL."""
+
+    with contextlib.ExitStack() as stack:
+        files = [stack.enter_context(open(path, "rb")) for path in image_paths]
+        response = api.upload_files(files)
+
+        return [result.url for result in response]
+
+
 def store_embeddings(batch_size: int = 30):
     """Processes images and stores their embeddings in the vectorstore."""
 
@@ -60,14 +77,15 @@ def store_embeddings(batch_size: int = 30):
         files = image_files[i : i + batch_size]
         file_paths = [Path(IMAGES_DIR) / file for file in files]
         embeddings = generate_embeddings(file_paths)
+        urls = upload_to_uploadthing(file_paths)
 
         records = [
             RecordToInsert(
                 embedding=emb,
-                text=encode_image_base64(path),
+                text=url,
                 metadata={"filename": file},
             )
-            for emb, file, path in zip(embeddings, files, file_paths)
+            for emb, file, url in zip(embeddings, files, urls)
         ]
 
         if records:

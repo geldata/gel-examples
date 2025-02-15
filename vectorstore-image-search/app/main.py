@@ -29,7 +29,7 @@ def generate_gpt_response(prompt: str, base64_images: list):
         {
             "type": "image_url",
             "image_url": {
-                "url": f"data:image/jpeg;base64,{img}",
+                "url": f"{img}",
                 # "detail": "low",
             },
         }
