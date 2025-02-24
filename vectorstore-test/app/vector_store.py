@@ -15,7 +15,8 @@ def load_images(*image_paths: str) -> torch.Tensor:
 
 
 class EmbeddingModel(gel.ai.BaseEmbeddingModel[str]):
-    def __call__(self, text: str) -> Sequence[float]:
+
+    async def generate(self, text: str) -> Sequence[float]:
         image_input = load_images(text)
 
         with torch.no_grad():
