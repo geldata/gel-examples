@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Query Gel vectorstore nature images</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        margin: 40px 20px 20px;
+      }
+      .description {
+        max-width: 540px;
+        margin: 0 auto 32px auto;
+        line-height: 1.4;
+      }
+      form {
+        margin-bottom: 20px;
+      }
+      input[type="text"] {
+        padding: 11px 10px;
+        width: 360px;
+        background: white;
+        border-radius: 4px;
+        border: 1px solid black;
+        outline-color: #4d8a4d;
+      }
+      /* overrides background of the autofill suggestion dropdown*/
+      input:-internal-autofill-selected,
+      input:-webkit-autofill {
+        box-shadow: 0 0 0px 1000px white inset !important;
+      }
+      input:-internal-autofill-selected:hover,
+      input:-webkit-autofill:hover {
+        box-shadow: 0 0 0px 1000px white inset !important;
+      }
+      button {
+        padding: 12px 20px;
+        background: #4d8a4d;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #4e9a4e;
+      }
+      .results {
+        margin-top: 20px;
+        max-width: 540px;
+        margin: 0 auto;
+      }
+      .response-text {
+        font-weight: bold;
+        margin-bottom: 20px;
+        line-height: 1.4;
+      }
+      .image-container {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 20px;
+      }
+      .image-container img {
+        width: 200px;
+        height: auto;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+      }
+      .loading {
+        display: none;
+        margin: 20px auto;
+        height: 2px;
+        letter-spacing: 4px;
+      }
+      .loading:after {
+        content: ".";
+        animation: dots 1.5s steps(6, end) infinite;
+      }
+      @keyframes dots {
+        0%,
+        20% {
+          content: ".";
+        }
+        40% {
+          content: "..";
+        }
+        60% {
+          content: "...";
+        }
+        80%,
+        100% {
+          content: "";
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Query Gel vectorstore nature images</h1>
+    <p class="description">
+      The store contains images of nature scenes: beaches, mountains, forests,
+      rivers, flowers, fog, sky... even some mushrooms. You can ask questions
+      like: <b>"What do daisies look like?"</b>,
+      <b>"What is the color of the night sky?"</b>,
+      <b>"Do you know any mushrooms?"</b>.
+    </p>
+    <form method="post" action="/" id="searchForm">
+      <input
+        type="text"
+        name="query"
+        placeholder="Enter your query..."
+        required
+      />
+      <button type="submit">Search</button>
+    </form>
+
+    <div class="loading" id="loadingIndicator"></div>
+
+    {% if query %}
+    <div class="results">
+      {% if response %}
+      <p class="response-text">{{ response }}</p>
+      {% endif %} {% if results %}
+      <div class="image-container">
+        {% for image_uri in results %}
+        <img
+          src="{{'images/' + image_uri.split('images/', 1)[-1]}}"
+          alt="Image depicting nature"
+        />
+        {% endfor %}
+      </div>
+      {% else %}
+      <p>No matching images found.</p>
+      {% endif %}
+    </div>
+    {% endif %}
+    <script>
+      const form = document.getElementById("searchForm");
+      const loadingIndicator = document.getElementById("loadingIndicator");
+      const resultsDiv = document.querySelector(".results");
+
+      form.addEventListener("submit", function () {
+        loadingIndicator.style.display = "block";
+        resultsDiv.style.display = "none";
+      });
+
+      if (resultsDiv) {
+        loadingIndicator.style.display = "none";
+        resultsDiv.style.display = "block";
+      }
+    </script>
+  </body>
+</html>
