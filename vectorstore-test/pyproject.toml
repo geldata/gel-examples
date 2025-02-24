@@ -1,0 +1,20 @@
+[project]
+name = "vectorstore-test"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "clip",
+    "fastapi[standard]>=0.115.8",
+    "httpx-sse>=0.4.0",
+    "openai>=1.63.2",
+    "pillow>=11.1.0",
+    "python-dotenv>=1.0.1",
+    "python-multipart>=0.0.20",
+    "torch>=2.6.0",
+    "uvicorn>=0.34.0",
+]
+
+[tool.uv.sources]
+clip = { git = "https://github.com/openai/CLIP.git" }

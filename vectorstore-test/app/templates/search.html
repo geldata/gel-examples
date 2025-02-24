@@ -122,13 +122,10 @@
     <div class="results">
       {% if response %}
       <p class="response-text">{{ response }}</p>
-      {% endif %} {% if results %}
+      {% endif %} {% if images %}
       <div class="image-container">
-        {% for image_uri in results %}
-        <img
-          src="{{'images/' + image_uri.split('images/', 1)[-1]}}"
-          alt="Image depicting nature"
-        />
+        {% for img_name in images %}
+        <img src="{{'images/' + img_name}}" alt="Image depicting nature" />
         {% endfor %}
       </div>
       {% else %}

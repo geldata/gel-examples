@@ -1,4 +1,4 @@
-from gel.ai import GelVectorstore
+from gel.ai import Vectorstore
 
 client_config = {
     "host": "localhost",
@@ -8,7 +8,7 @@ client_config = {
     "tls_security": "insecure",
 }
 
-vector_store = GelVectorstore(
+vector_store = Vectorstore(
     embedding_model=None,
     record_type="Image",
     collection_name="images",

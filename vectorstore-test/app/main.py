@@ -1,23 +1,13 @@
 import os
-import torch
-import clip
 import openai
 import base64
+import torch
+import clip
 from fastapi import FastAPI, Form, Request
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from .vector_store import vector_store
-from .constants import (
-    IMAGES_DIR,
-    TEMPLATES_DIR,
-    DEVICE,
-    CLIP_MODEL,
-    OPENAI_API_KEY,
-)
-
-
-# Load CLIP model on device.
-model, preprocess = clip.load(CLIP_MODEL, device=DEVICE)
+from .constants import IMAGES_DIR, TEMPLATES_DIR, OPENAI_API_KEY, DEVICE, model
 
 app = FastAPI()
 
@@ -105,7 +95,7 @@ async def search(request: Request, query: str = Form(None)):
                 "request": request,
                 "query": None,
                 "response": None,
-                "results": [],
+                "images": [],
             },
         )
 
@@ -116,7 +106,7 @@ async def search(request: Request, query: str = Form(None)):
                 "request": request,
                 "query": None,
                 "response": "Please enter a query.",
-                "results": [],
+                "images": [],
             },
         )
 
@@ -128,8 +118,8 @@ async def search(request: Request, query: str = Form(None)):
             {
                 "request": request,
                 "query": query,
-                "response": "No images found.",
-                "results": [],
+                "response": "Sorry, but we couldn't find have any relevant images in our database for your query.",
+                "images": [],
             },
         )
 
@@ -141,6 +131,6 @@ async def search(request: Request, query: str = Form(None)):
             "request": request,
             "query": query,
             "response": response_text,
-            "results": images,
+            "images": images,
         },
     )

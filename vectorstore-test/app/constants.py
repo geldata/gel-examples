@@ -11,8 +11,10 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 if not OPENAI_API_KEY:
     raise ValueError("OPENAI_API_KEY not found in environment variables")
 
-# This gets the directory where the script is running - app directory.
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# This gets the directory where the script is located - app directory.
+BASE_DIR = os.path.dirname(
+    os.path.abspath(__file__)
+)  # todod explain this better in the tutorial
 
 # Folder where images are stored relative to the app directory.
 IMAGES_DIR = os.path.join(BASE_DIR, "images")
