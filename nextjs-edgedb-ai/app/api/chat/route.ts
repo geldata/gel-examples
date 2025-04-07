@@ -1,5 +1,5 @@
-import { createClient } from "edgedb";
-import { createAI } from "@edgedb/ai";
+import { createClient } from "gel";
+import { createRAGClient } from "@gel/ai";
 import {
   countryTool,
   getCountry,
@@ -8,9 +8,9 @@ import {
 
 export const dynamic = "force-dynamic";
 
-export const client = createClient();
+export const client = createClient({ tlsSecurity: "insecure" });
 
-const gpt4Ai = createAI(client, {
+const gpt4Ai = createRAGClient(client, {
   model: "gpt-4o",
 });
 

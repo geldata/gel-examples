@@ -2,14 +2,14 @@
 
 import { useState } from "react";
 import { GPTLogo, RunIcon } from "./icons";
-import { EdgeDBAssistantMessage, EdgeDBUserMessage } from "@edgedb/ai";
+import { AssistantMessage, UserMessage } from "@gel/ai";
 import LoadingDots from "./components/loadingDots";
 
 export default function Home() {
   const [input, setInput] = useState("");
-  const [messages, setMessages] = useState<
-    (EdgeDBUserMessage | EdgeDBAssistantMessage)[]
-  >([]);
+  const [messages, setMessages] = useState<(UserMessage | AssistantMessage)[]>(
+    []
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

@@ -1,5 +1,5 @@
-import { createClient } from "edgedb";
-import { createAI, EdgeDBMessage, EdgeDBUserMessage } from "@edgedb/ai";
+import { createClient } from "gel";
+import { createRAGClient, Message, UserMessage } from "@gel/ai";
 import {
   countryTool,
   getCountry,
@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 
 export const client = createClient();
 
-const gpt4Ai = createAI(client, {
+const gpt4Ai = createRAGClient(client, {
   model: "gpt-4-turbo-preview",
 });
 
@@ -21,7 +21,7 @@ export async function POST(req: Request) {
   const { prompt } = await req.json();
 
   async function processStream(
-    prompt: string | EdgeDBMessage[],
+    prompt: string | Message[],
     controller: ReadableStreamDefaultController
   ) {
     let toolCalls: any[] = [];

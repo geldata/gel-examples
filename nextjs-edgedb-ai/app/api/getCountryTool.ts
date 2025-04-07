@@ -1,5 +1,5 @@
-import { EdgeDBAssistantMessage, EdgeDBToolMessage } from "@edgedb/ai";
-import type { Client } from "edgedb";
+import { AssistantMessage, ToolMessage } from "@gel/ai";
+import type { Client } from "gel";
 
 export const countryTool = {
   type: "function",
@@ -37,7 +37,7 @@ export async function getCountry(client: Client, author: string) {
 }
 
 export function generateToolMessages(toolCalls: any[], results: any[]) {
-  let messages: (EdgeDBAssistantMessage | EdgeDBToolMessage)[] = [];
+  let messages: (AssistantMessage | ToolMessage)[] = [];
 
   toolCalls.forEach((call, i) => {
     messages.push(

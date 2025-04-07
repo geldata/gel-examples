@@ -1,5 +1,5 @@
 {
-  "name": "nextjs-edgedb-ai",
+  "name": "nextjs-gel-ai",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -10,13 +10,13 @@
     "seed": "tsx seed.ts"
   },
   "dependencies": {
-    "@edgedb/ai": "file:../../edgedb-js/packages/ai",
-    "@edgedb/generate": "file:../../edgedb-js/packages/generate",
-    "@next/env": "^14.2.3",
+    "@gel/ai": "^0.1.1",
+    "@gel/generate": "^0.6.2",
+    "@next/env": "^14.2.26",
     "ai": "^4.0.0",
-    "edgedb": "^1.5.12",
+    "gel": "^2.0.2",
     "eventsource-parser": "^1.1.2",
-    "next": "^14.2.3",
+    "next": "^14.2.26",
     "openai": "^4.68.1",
     "react": "^18",
     "react-dom": "^18"
