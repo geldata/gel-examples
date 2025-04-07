@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #191919;
+  --text-color: #bfbfbf;
+}
+
+body {
+  background: var(--bg);
+
+  p,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: var(--text-color);
+    line-height: 1.7;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+      "Helvetica Neue", Arial, sans-serif;
+  }
+
+  h1 {
+    font-size: 24px;
+    font-weight: 500;
+    margin-top: 12px;
+    margin-bottom: 16px;
+    letter-spacing: 0.01em;
+  }
+}
