@@ -1,6 +1,6 @@
 # Book Notes App
 
-This is a demo application showcasing the integration of [Drizzle ORM](https://orm.drizzle.team/) with [Gel](https://gel.dev/) and [Next.js](https://nextjs.org). The app allows users to manage books and their associated notes.
+This is a demo application showcasing the integration of [Drizzle ORM](https://orm.drizzle.team/) with [Gel](https://geldata.com/) and [Next.js](https://nextjs.org). The app allows users to manage books and their associated notes.
 
 ---
 
