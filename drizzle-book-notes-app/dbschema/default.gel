@@ -1,0 +1,22 @@
+module default {
+  type Book {
+    required title: str;
+    author: str;
+    year: int16;
+    genre: str;
+    read_date: datetime;
+
+    # Relationship to notes
+    multi notes := .<book[is Note];
+  }
+
+  type Note {
+    required text: str;
+    created_at: datetime {
+      default := datetime_current();
+    }
+
+    # Link to the book
+    required book: Book;
+  }
+}

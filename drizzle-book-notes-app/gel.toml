@@ -1,0 +1,10 @@
+watch = []
+
+[instance]
+server-version = "6.4"
+
+
+[hooks]
+after_migration_apply = [
+  "npx drizzle-kit pull"
+]
