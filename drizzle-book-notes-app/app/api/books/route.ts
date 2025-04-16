@@ -1,6 +1,6 @@
+import { book } from '@/drizzle/schema';
+import { db } from '@/src/db';
 import { NextResponse } from 'next/server';
-import { db } from '../../../src/db';
-import { book } from '../../../drizzle/schema';
 
 export async function GET() {
   try {
