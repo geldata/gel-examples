@@ -1,0 +1,17 @@
+{
+  "name": "auth-nodejs-example",
+  "version": "1.0.0",
+  "private": true,
+  "description": "",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "edgedb": "^1.4.0"
+  },
+  "devDependencies": {
+    "prettier": "^3.0.3"
+  }
+}
