@@ -324,7 +324,10 @@ export function ResetPasswordForm({ resetToken }: { resetToken: string }) {
             required
             className="bg-slate-50 border border-slate-200 rounded-lg mb-4 px-4 py-3 outline-sky-500 outline-2 focus:outline focus:bg-white"
           />
-          <SubmitButton label="Send reset email" submittingLabel="Sending..." />
+          <SubmitButton
+            label="Update password"
+            submittingLabel="Updating password..."
+          />
         </>
       )}
     </form>
