@@ -6,6 +6,7 @@ import {
 } from "@remix-run/react";
 import { type ActionFunctionArgs, json, redirect } from "@remix-run/node";
 import auth from "~/services/auth.server";
+import { UserError } from "@edgedb/auth-remix/server";
 import clientAuth from "~/services/auth";
 import { BackIcon, OAuthIcons } from "../icons";
 import SigninForm from "../components/auth/SigninForm";
@@ -86,7 +87,12 @@ export default function SignInPage() {
 export const action = ({ request }: ActionFunctionArgs) => {
   return auth.emailPasswordSignIn(request, ({ error }) => {
     if (error) {
-      return json({ error: error.message });
+      return json({
+        error:
+          error instanceof UserError
+            ? `Error signing in: ${error.message}`
+            : `Unknown error occurred signing in`,
+      });
     } else {
       return redirect("/");
     }
