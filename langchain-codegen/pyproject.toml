@@ -1,0 +1,25 @@
+[project]
+name = "langchain-codegen"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "anbuzin", email = "contactbuzin@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "gel>=3.1.0",
+    "langchain>=0.3.25",
+    "langchain-gel>=1.0.0",
+    "langchain-mcp-adapters>=0.0.11",
+    "langgraph>=0.4.3",
+    "pydantic>=2.11.4",
+]
+
+[project.scripts]
+langchain-codegen = "langchain_codegen:main"
+render-docs = "langchain_codegen.parser.graph:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
