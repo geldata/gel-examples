@@ -1,0 +1,25 @@
+using extension pgvector;
+                                    
+module default {
+    scalar type EmbeddingVector extending ext::pgvector::vector<1536>;
+
+    type Record {
+        required collection: str;
+        text: str;
+        embedding: EmbeddingVector; 
+        external_id: str {
+            constraint exclusive;
+        };
+        metadata: json;
+
+        index ext::pgvector::hnsw_cosine(m := 16, ef_construction := 128)
+            on (.embedding)
+    } 
+
+
+    type Plant {
+        name: str;
+        description: str;
+        how_to_care: str;
+    }
+}
