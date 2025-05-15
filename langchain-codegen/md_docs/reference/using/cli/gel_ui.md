@@ -1,0 +1,20 @@
+# gel ui
+
+Open the Gel UI of the current instance in your default browser.
+
+```cli-synopsis
+gel ui [<options>]
+```
+
+## Description
+
+gel ui is a terminal command used to open the Gel UI in your default browser. Alternatively, it can be used to print the UI URL with the --print-url option.
+
+The Gel UI is a tool that allows you to graphically manage and query your Gel database. It contains a REPL, a textual and graphical view of your database schemas, and a data explorer which allows for viewing your data as a table.
+
+The UI is served by default by development instances. To enable the UI on a production instance, use the --admin-ui option with gel-server or set the GEL_SERVER_ADMIN_UI environment variable to enabled.
+
+## Options
+
+The ui command runs on the branch it is connected to. For specifying the connection target see connection options.
+

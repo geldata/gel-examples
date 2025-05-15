@@ -1,0 +1,2 @@
+# Adding shared properties
+
