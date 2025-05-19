@@ -1,12 +1,12 @@
 from langgraph.prebuilt import create_react_agent
 from langgraph.checkpoint.memory import InMemorySaver
 from dotenv import load_dotenv
-from langchain_core.tools import tool
 from langchain_codegen.rag import load_vectorstore
 from langchain_mcp_adapters.client import MultiServerMCPClient
 import asyncio
 from pathlib import Path
 from pprint import pprint
+import argparse
 
 
 load_dotenv()
@@ -15,7 +15,7 @@ ROOT_PATH = Path(".").resolve()
 print(ROOT_PATH)
 
 
-async def main():
+async def main(query: str):
     vector_store = await load_vectorstore()
     checkpointer = InMemorySaver()
 
@@ -26,12 +26,10 @@ async def main():
                 "args": [
                     "--refresh",
                     "--directory",
-                    "/Users/andrey/local/projects/gel_content_cooked/gel-examples/langchain-codegen",
+                    ROOT_PATH,
                     "--from",
-                    "git+https://github.com/geldata/gel-mcp.git@update-fastmcp",
+                    "git+https://github.com/geldata/gel-mcp.git",
                     "gel-mcp",
-                    "--workflows-file",
-                    "/Users/andrey/local/projects/mcp_server_built/gel_workflows/workflows.jsonl",
                 ],
                 "transport": "stdio",
             }
@@ -55,7 +53,7 @@ async def main():
                 "messages": [
                     {
                         "role": "user",
-                        "content": "Write a minimal example of a schema with a computed backlink",
+                        "content": query,
                     }
                 ]
             },
@@ -68,5 +66,8 @@ async def main():
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    parser = argparse.ArgumentParser(description="Gel LangChain Agent")
+    parser.add_argument("query", help="The query to process")
+    args = parser.parse_args()
+    asyncio.run(main(args.query))
 

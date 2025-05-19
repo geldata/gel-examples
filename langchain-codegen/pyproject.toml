@@ -19,7 +19,8 @@ dependencies = [
 ]
 
 [project.scripts]
-langchain-codegen = "langchain_codegen:main"
+build-rag = "langchain_codegen.rag:main"
+agent = "langchain_codegen.agent:main"
 
 [build-system]
 requires = ["hatchling"]
