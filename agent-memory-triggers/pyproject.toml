@@ -1,0 +1,24 @@
+[project]
+name = "agent-memory-triggers"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "anbuzin", email = "contactbuzin@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi[standard]>=0.115.12",
+    "gel>=3.0.1",
+    "httpx>=0.28.1",
+    "pydantic-ai>=0.1.8",
+    "python-dotenv>=1.1.0",
+    "streamlit>=1.44.1",
+]
+
+[project.scripts]
+agent-memory-triggers = "agent_memory_triggers:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
