@@ -4,7 +4,7 @@ from llama_index.core.agent.workflow import FunctionAgent
 from llama_index.vector_stores.gel import GelVectorStore
 import gel
 import asyncio
-import sys
+import argparse
 
 
 load_dotenv()
@@ -93,12 +93,15 @@ async def run_agent(query: str):
 
 
 async def main():
-    if len(sys.argv) > 1:
-        query = " ".join(sys.argv[1:])
-        await run_agent(query)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("query", nargs="?", help="Natural language query to process")
+    args = parser.parse_args()
+
+    if args.query:
+        await run_agent(args.query)
     else:
         await run_agent("What kinds of plants do we have in the database?")
-        
+
         new_plant_query = """
         I'd like to add a new plant to my collection. It's called a 'String of Pearls' 
         and it's a succulent with trailing stems covered in small, bead-like leaves that 
@@ -106,7 +109,7 @@ async def main():
         is completely dry, provide bright indirect light, and be careful not to overwater
         as it's prone to root rot. Could you add this to my plant database?
         """
-        
+
         await run_agent(new_plant_query)
 
 

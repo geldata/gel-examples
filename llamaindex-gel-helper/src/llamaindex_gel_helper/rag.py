@@ -8,12 +8,19 @@ load_dotenv()
 
 
 DOCS_PATH = Path("md_docs/").resolve()
-print(DOCS_PATH)
+print(f"Loading documentation from {DOCS_PATH}")
 
-documents = SimpleDirectoryReader(DOCS_PATH.as_posix(), recursive=True).load_data()
-vector_store = GelVectorStore()
 
-storage_context = StorageContext.from_defaults(vector_store=vector_store)
-index = VectorStoreIndex.from_documents(
-    documents, storage_context=storage_context, show_progress=True
-)
+def main():
+    documents = SimpleDirectoryReader(DOCS_PATH.as_posix(), recursive=True).load_data()
+    vector_store = GelVectorStore()
+
+    storage_context = StorageContext.from_defaults(vector_store=vector_store)
+    index = VectorStoreIndex.from_documents(
+        documents, storage_context=storage_context, show_progress=True
+    )
+    return index
+
+
+if __name__ == "__main__":
+    main()

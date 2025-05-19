@@ -26,28 +26,35 @@ index = VectorStoreIndex.from_documents(
 
 1. Install dependencies:
 
-   ```bash
-   uv sync
-   ```
+```bash
+uv sync
+```
 
 2. Set up environment variables (.env):
 
-   ```
-   OPENAI_API_KEY=your_openai_key
-   ```
+```
+OPENAI_API_KEY=your_openai_key
+```
 
 3. Initialize the Gel database:
 
-   ```bash
-   gel project init 
-   gel migration create
-   gel migrate 
-   ```
+```bash
+gel project init 
+gel migration create
+gel migrate 
+```
 
 4. Load example data:
-   ```
-   gel query -f example_inserts.edgeql
-   ```
+
+```bash
+gel query -f example_inserts.edgeql
+```
+
+5. Build the RAG index for Gel documentation:
+
+```bash
+uv run build-rag
+```
 
 ## Usage
 
