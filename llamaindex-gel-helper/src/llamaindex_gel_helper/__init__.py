@@ -1,2 +1,5 @@
+from .agent import main as agent_main
+import asyncio
+
 def main() -> None:
-    print("Hello from llamaindex-gel-helper!")
+    asyncio.run(agent_main())

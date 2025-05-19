@@ -16,7 +16,7 @@ dependencies = [
 ]
 
 [project.scripts]
-llamaindex-gel-helper = "llamaindex_gel_helper:main"
+agent = "llamaindex_gel_helper:main"
 
 [build-system]
 requires = ["hatchling"]

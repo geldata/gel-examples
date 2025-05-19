@@ -4,6 +4,7 @@ from llama_index.core.agent.workflow import FunctionAgent
 from llama_index.vector_stores.gel import GelVectorStore
 import gel
 import asyncio
+import sys
 
 
 load_dotenv()
@@ -86,22 +87,27 @@ workflow = FunctionAgent(
 )
 
 
+async def run_agent(query: str):
+    response = await workflow.run(user_msg=query)
+    print(response)
+
+
 async def main():
-    response = await workflow.run(
-        user_msg="What kinds of plants do we have in the database?"
-    )
-    print(response)
-
-    new_plant_query = """
-    I'd like to add a new plant to my collection. It's called a 'String of Pearls' 
-    and it's a succulent with trailing stems covered in small, bead-like leaves that 
-    resemble a pearl necklace. To care for it properly, water sparingly when the soil
-    is completely dry, provide bright indirect light, and be careful not to overwater
-    as it's prone to root rot. Could you add this to my plant database?
-    """
-
-    response = await workflow.run(user_msg=new_plant_query)
-    print(response)
+    if len(sys.argv) > 1:
+        query = " ".join(sys.argv[1:])
+        await run_agent(query)
+    else:
+        await run_agent("What kinds of plants do we have in the database?")
+        
+        new_plant_query = """
+        I'd like to add a new plant to my collection. It's called a 'String of Pearls' 
+        and it's a succulent with trailing stems covered in small, bead-like leaves that 
+        resemble a pearl necklace. To care for it properly, water sparingly when the soil
+        is completely dry, provide bright indirect light, and be careful not to overwater
+        as it's prone to root rot. Could you add this to my plant database?
+        """
+        
+        await run_agent(new_plant_query)
 
 
 if __name__ == "__main__":
