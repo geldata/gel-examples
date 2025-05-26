@@ -61,6 +61,6 @@ uv run build-rag
 Run queries directly from the command line:
 
 ```bash
-uv run agent "What kinds of plants do we have in the database?"
-uv run agent "Add a Calathea plant that needs indirect light and high humidity"
+uvx --from . gel-agent "What kinds of plants do we have in the database?"
+uvx --from . gel-agent "Add a Calathea plant that needs indirect light and high humidity"
 ```

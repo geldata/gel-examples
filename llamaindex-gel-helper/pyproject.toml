@@ -16,7 +16,7 @@ dependencies = [
 ]
 
 [project.scripts]
-agent = "llamaindex_gel_helper:main"
+gel-agent = "llamaindex_gel_helper:main"
 build-rag = "llamaindex_gel_helper.rag:main"
 
 [build-system]
