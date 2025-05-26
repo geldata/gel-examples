@@ -1,0 +1,24 @@
+[project]
+name = "llamaindex-gel-helper"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "anbuzin", email = "contactbuzin@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "gel>=3.1.0",
+    "llama-index>=0.12.36",
+    "llama-index-llms-openai>=0.3.38",
+    "llama-index-vector-stores-gel>=0.1.0",
+    "python-dotenv>=1.1.0",
+]
+
+[project.scripts]
+gel-agent = "llamaindex_gel_helper:main"
+build-rag = "llamaindex_gel_helper.rag:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
