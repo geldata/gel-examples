@@ -1,0 +1,200 @@
+using extension ai;
+
+module default {
+    global summary_threshold: int64 {
+        default := 5;
+    };
+
+    global num_messages_to_leave: int64 {
+        default := 2;
+    };
+
+    type Message {
+        llm_role: str;
+        body: str;
+        tool_name: str;
+        tool_args: json;
+        created_at: datetime {
+            default := datetime_current();
+        };
+        is_evicted: bool {
+            default := false;
+        };
+    }
+
+    type Chat {
+        created_at: datetime {
+            default := datetime_current();
+        };
+        title: str {
+            default := "Untitled";
+        };
+        multi archive: Message;
+        multi history := (
+            select .archive filter not .is_evicted
+        );
+        
+        trigger summarize after insert, update for each do (
+            with remaining_messages := (
+                select __new__.history 
+                order by .created_at desc 
+                limit global num_messages_to_leave
+            ),
+            last_message := (
+                select remaining_messages 
+                order by .created_at desc 
+                limit 1
+            ),
+            cutoff_message := (
+                select remaining_messages 
+                order by .created_at asc 
+                limit 1
+            ),
+            select request_summary(
+                __new__.id,
+                assert_exists(cutoff_message.created_at)
+            ) if 
+                (count(__new__.history) > global summary_threshold)
+                and last_message.llm_role = "assistant"
+            else {}
+        );
+
+        trigger extract after update for each do (
+            select net::http::schedule_request(
+                'http://127.0.0.1:8000/extract',
+                method := net::http::Method.POST,
+                headers := [('Content-Type', 'application/json')],
+                body := to_bytes(
+                    to_str(
+                        json_object_pack(
+                            {
+                                ("chat_id", <json>__new__.id),
+                            }
+                        )
+                    )
+                )
+            )
+        );
+
+        trigger get_title after update for each do (
+            with
+                messages := (
+                    select __new__.history 
+                    order by .created_at asc 
+                ),
+                messages_body := array_agg((
+                    select messages.body
+                    order by messages.created_at
+                ))
+            select net::http::schedule_request(
+                'http://127.0.0.1:8000/get_title',
+                method := net::http::Method.POST,
+                headers := [('Content-Type', 'application/json')],
+                body := to_bytes(
+                    to_str(
+                        json_object_pack(
+                            {
+                                ("chat_id", <json>__new__.id),
+                                ("messages", <json>messages_body),
+                            }
+                        )
+                    )
+                )
+            ) if __new__.title = "Untitled"
+            else {}
+        )
+    }
+
+    function request_summary(chat_id: uuid, cutoff: datetime) -> net::http::ScheduledRequest 
+    using (
+        with 
+            chat := assert_exists((select Chat filter .id = chat_id)),
+            messages := (
+                select chat.history 
+                filter .created_at < cutoff
+            ),
+            summary_datetime := (
+                select messages.created_at
+                order by messages.created_at desc
+                limit 1
+            ),
+            messages_body := array_agg((
+                select messages.body
+                order by messages.created_at
+            ))
+        select net::http::schedule_request(
+            'http://127.0.0.1:8000/summarize',
+            method := net::http::Method.POST,
+            headers := [('Content-Type', 'application/json')],
+            body := to_bytes(
+                to_str(
+                    json_object_pack(
+                        {
+                            ("chat_id", <json>chat_id),
+                            ("messages", <json>messages_body),
+                            ("cutoff", <json>cutoff),
+                            ("summary_datetime", <json>summary_datetime)
+                        }
+                    )
+                )
+            )
+        ) 
+    );
+
+    function insert_summary(
+        chat_id: uuid, 
+        cutoff: datetime, 
+        summary: str, 
+        summary_datetime: datetime
+    ) -> Chat using (
+        with 
+            chat := assert_exists((select Chat filter .id = chat_id)),
+            evicted_messages := (
+                update chat.archive 
+                filter .created_at < cutoff 
+                set {
+                    is_evicted := true
+                } 
+            ),
+            summary_message := (
+                insert Message {
+                    llm_role := "system",
+                    body := summary,
+                    created_at := summary_datetime,
+                }
+            ),
+        update chat set {
+            archive := distinct (.archive union summary_message)
+        } 
+    );
+
+    type Fact {
+        key: str {
+            constraint exclusive;
+        }
+        value: str;
+        body := .key ++ ": " ++ .value;
+        from_message: Message;
+
+        deferred index ext::ai::index(
+            embedding_model := "text-embedding-3-small"
+        ) on (.key ++ ": " ++ .value);
+    }
+
+    type Prompt {
+        key: str {
+            constraint exclusive;
+        };
+        value: str;
+        body := .key ++ ": " ++ .value;
+        from_message: Message;
+    }
+
+    type Resource {
+        body: str;
+
+        deferred index ext::ai::index(
+            embedding_model := "text-embedding-3-small"
+        ) on (.body);
+    }
+}
