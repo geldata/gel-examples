@@ -20,7 +20,7 @@ Take a look at `rag.py` and `agent.py` to find out the details.
 
 1. Install dependencies:
 ```bash
-uv synv
+uv sync
 ```
 
 2. Create a `.env` file with your OpenAI API key:
@@ -45,7 +45,7 @@ uv run build-rag
 Run the agent with your query:
 
 ```bash
-uv run agent "Write a minimal example of a schema with a computed backlink"
+uvx --from . gel-agent "Write a minimal example of a schema with a computed backlink"
 ```
 
 The agent will process your query and generate appropriate Gel database code, using both the vector store for documentation search and the Gel MCP for code generation.

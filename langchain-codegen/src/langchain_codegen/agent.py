@@ -26,7 +26,7 @@ async def main(query: str):
                 "args": [
                     "--refresh",
                     "--directory",
-                    ROOT_PATH,
+                    ROOT_PATH.as_posix(),
                     "--from",
                     "git+https://github.com/geldata/gel-mcp.git",
                     "gel-mcp",
@@ -65,9 +65,14 @@ async def main(query: str):
     print(response["messages"][-1].content)
 
 
-if __name__ == "__main__":
+def cli():
+    """CLI entry point for the agent."""
     parser = argparse.ArgumentParser(description="Gel LangChain Agent")
     parser.add_argument("query", help="The query to process")
     args = parser.parse_args()
     asyncio.run(main(args.query))
+
+
+if __name__ == "__main__":
+    cli()
 
