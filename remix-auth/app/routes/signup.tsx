@@ -6,6 +6,7 @@ import {
 } from "@remix-run/react";
 import { json, redirect } from "@remix-run/node";
 import auth from "~/services/auth.server";
+import { UserError } from "@edgedb/auth-remix/server";
 import { BackIcon } from "../icons";
 import SignupForm from "../components/auth/SignupForm";
 import { type ActionFunctionArgs } from "@remix-run/node";
@@ -90,7 +91,13 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   else
     return auth.emailPasswordSignUp(request, async ({ error, tokenData }) => {
       if (error) {
-        return json({ error: error.message, message: null });
+        return json({
+          error:
+            error instanceof UserError
+              ? `Error signing up: ${error.message}`
+              : `Unknown error occurred signing up`,
+          message: null,
+        });
       } else {
         try {
           if (!tokenData) {
@@ -106,13 +113,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
           return redirect("/");
         } catch (e) {
-          let err: any = e instanceof Error ? e.message : String(e);
-          try {
-            err = JSON.parse(err);
-          } catch {}
           return json({
             error: `Error signing up: ${
-              err?.error?.message ?? JSON.stringify(err)
+              e instanceof Error ? e.message : String(e)
             }`,
             message: null,
           });

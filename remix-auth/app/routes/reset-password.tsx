@@ -6,6 +6,7 @@ import {
   redirect,
 } from "@remix-run/node";
 import auth from "~/services/auth.server";
+import { UserError } from "@edgedb/auth-remix/server";
 import { BackIcon } from "../icons";
 import ResetPasswordForm from "~/components/auth/ResetPasswordForm";
 
@@ -71,7 +72,12 @@ export default function ResetPasswordPage() {
 export const action = async ({ request }: ActionFunctionArgs) => {
   return auth.emailPasswordResetPassword(request, ({ error }) => {
     if (error) {
-      return json({ error: error.message });
+      return json({
+        error:
+          error instanceof UserError
+            ? `Error resetting password: ${error.message}`
+            : `Unknown error occurred resetting password`,
+      });
     } else {
       return redirect("/");
     }
