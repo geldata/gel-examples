@@ -52,7 +52,7 @@ export async function addTodo(content: string) {
   const session = auth.getSession();
 
   await session.client
-    // workaround for this bug: https://github.com/edgedb/edgedb/issues/6340
+    // workaround for this bug: https://github.com/edgedb/edgedb/issues/6535
     .withConfig({ apply_access_policies: false })
     .query(
       `
