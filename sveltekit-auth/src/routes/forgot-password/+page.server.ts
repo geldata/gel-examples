@@ -1,5 +1,5 @@
 import { fail, type Actions } from "@sveltejs/kit";
-import { parseError } from "$lib/utils";
+import { UserError } from "@edgedb/auth-sveltekit/server";
 
 export const load = async ({ locals }) => ({
   providers: await locals.auth.getProvidersInfo(),
@@ -21,7 +21,10 @@ export const actions = {
       };
     } catch (e) {
       return fail(400, {
-        error: `Error signing up: ${parseError(e)}`,
+        error:
+          e instanceof UserError
+            ? `Error sending password reset: ${e.message}`
+            : `Unknown error occurred sending password reset`,
       });
     }
   },
