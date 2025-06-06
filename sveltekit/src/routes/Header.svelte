@@ -1,6 +1,7 @@
-<script lang="ts">
+<script>
 	import { page } from '$app/stores';
-	import logo from './svelte-logo.svg';
+	import logo from '$lib/images/svelte-logo.svg';
+	import github from '$lib/images/github.svg';
 </script>
 
 <header>
@@ -15,12 +16,14 @@
 			<path d="M0,0 L1,2 C1.5,3 1.5,3 2,3 L2,0 Z" />
 		</svg>
 		<ul>
-			<li class:active={$page.url.pathname === '/'}><a sveltekit:prefetch href="/">Home</a></li>
+			<li class:active={$page.url.pathname === '/'}>
+				<a href="/">Home</a>
+			</li>
 			<li class:active={$page.url.pathname === '/about'}>
-				<a sveltekit:prefetch href="/about">About</a>
+				<a href="/about">About</a>
 			</li>
 			<li class:active={$page.url.pathname === '/todos'}>
-				<a sveltekit:prefetch href="/todos">Todos</a>
+				<a href="/todos">Todos</a>
 			</li>
 		</ul>
 		<svg viewBox="0 0 2 3" aria-hidden="true">
@@ -29,7 +32,9 @@
 	</nav>
 
 	<div class="corner">
-		<!-- TODO put something else here? github link? -->
+		<a href="https://github.com/sveltejs/kit">
+			<img src={github} alt="GitHub" />
+		</a>
 	</div>
 </header>
 
