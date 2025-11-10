@@ -11,7 +11,7 @@ export default async function Home({
 }) {
   const session = auth.getSession();
 
-  if (await session.isSignedIn()) {
+  if (await session.isLoggedIn()) {
     return <TodosPage />;
   }
 
