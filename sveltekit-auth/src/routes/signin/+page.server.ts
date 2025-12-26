@@ -1,5 +1,5 @@
 import { fail, redirect } from "@sveltejs/kit";
-import { parseError } from "$lib/utils";
+import { UserError } from "@edgedb/auth-sveltekit/server";
 import type { Actions } from "./$types";
 
 export const load = async ({ locals }) => ({
@@ -13,7 +13,10 @@ export const actions = {
       await locals.auth.emailPasswordSignIn(formData);
     } catch (e) {
       return fail(400, {
-        error: `Error signing up: ${parseError(e)}`,
+        error:
+          e instanceof UserError
+            ? `Error signing in: ${e.message}`
+            : `Unknown error occurred signing in`,
       });
     }
 

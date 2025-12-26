@@ -6,10 +6,12 @@
   import clientAuth from "$lib/auth.js";
 
   const providerIcons = {
-    "builtin::oauth_apple": "apple",
-    "builtin::oauth_azure": "microsoft-azure",
-    "builtin::oauth_github": "github",
-    "builtin::oauth_google": "google",
+    "builtin::oauth_apple": "logos:apple",
+    "builtin::oauth_azure": "logos:microsoft-azure",
+    "builtin::oauth_discord": "logos:discord-icon",
+    "builtin::oauth_github": "logos:github-icon",
+    "builtin::oauth_google": "logos:google-icon",
+    "builtin::oauth_slack": "logos:slack-icon",
   };
 
   export let params = transformSearchParams($page.url.searchParams);
@@ -34,7 +36,7 @@
           class="rounded-lg bg-slate-50 p-3 font-medium shadow-md shrink-0 hover:bg-white hover:scale-[1.03] transition-transform
 flex items-center"
         >
-          <Icon icon={`mdi:${providerIcons[provider.name]}`} />
+          <Icon icon={providerIcons[provider.name]} />
           <span class="ml-3">{provider.display_name}</span>
         </a>
       {/each}
