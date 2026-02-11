@@ -1,12 +1,12 @@
-import { redirect as kitRedirect } from '@sveltejs/kit';
-import type { PageServerLoad, Action } from './$types';
+import { fail } from '@sveltejs/kit';
+import type { PageServerLoad, Actions } from './$types';
 import { getFormData } from 'remix-params-helper';
 import { z } from 'zod';
 import e from '$db';
 import { client } from '$lib/edgedb';
 
 export const load: PageServerLoad = async ({ locals }) => {
-	// locals.userid comes from src/hooks.ts
+	// locals.userid comes from src/hooks.server.ts
 	const todos = await e
 		.select(e.Todo, (todo) => ({
 			id: true,
@@ -19,66 +19,58 @@ export const load: PageServerLoad = async ({ locals }) => {
 	return { todos };
 };
 
-export const POST: Action = async ({ request, locals }) => {
-	const schema = z.object({
-		text: z.string()
-	});
-	const { data, errors, success } = await getFormData(request, schema);
+export const actions: Actions = {
+	addTodo: async ({ request, locals }) => {
+		const schema = z.object({
+			text: z.string()
+		});
+		const { data, errors, success } = await getFormData(request, schema);
 
-	if (!success) {
-		return { errors };
+		if (!success) {
+			return fail(400, errors);
+		}
+
+		await e
+			.insert(e.Todo, {
+				text: data.text,
+				created_by: locals.userid
+			})
+			.run(client);
+	},
+	editTodo: async ({ request }) => {
+		const schema = z.object({
+			id: z.string().uuid(),
+			text: z.string().optional(),
+			done: z.boolean().optional()
+		});
+		const { data, errors, success } = await getFormData(request, schema);
+
+		if (!success) {
+			return fail(400, errors);
+		}
+
+		const { id, text, done } = data;
+		await e
+			.update(e.Todo, () => ({
+				filter_single: { id },
+				set: { text, done }
+			}))
+			.run(client);
+	},
+	deleteTodo: async ({ request }) => {
+		const schema = z.object({
+			id: z.string().uuid()
+		});
+		const { data, errors, success } = await getFormData(request, schema);
+
+		if (!success) {
+			return fail(400, errors);
+		}
+
+		await e
+			.delete(e.Todo, () => ({
+				filter_single: { id: data.id }
+			}))
+			.run(client);
 	}
-
-	await e
-		.insert(e.Todo, {
-			text: data.text,
-			created_by: locals.userid
-		})
-		.run(client);
-};
-
-// If the user has JavaScript disabled, the URL will change to
-// include the method override unless we redirect back to /todos
-const redirect = kitRedirect(303, '/todos');
-
-export const PATCH: Action = async ({ request }) => {
-	const schema = z.object({
-		id: z.string().uuid(),
-		text: z.string().optional(),
-		done: z.boolean().optional()
-	});
-	const { data, errors, success } = await getFormData(request, schema);
-
-	if (!success) {
-		return { errors };
-	}
-
-	const { id, text, done } = data;
-	await e
-		.update(e.Todo, (todo) => ({
-			filter: e.op(todo.id, '=', e.uuid(id)),
-			set: { text, done }
-		}))
-		.run(client);
-
-	throw redirect;
-};
-
-export const DELETE: Action = async ({ request }) => {
-	const schema = z.object({
-		id: z.string().uuid()
-	});
-	const { data, errors, success } = await getFormData(request, schema);
-
-	if (!success) {
-		return { errors };
-	}
-
-	await e
-		.delete(e.Todo, (todo) => ({
-			filter: e.op(todo.id, '=', e.uuid(data.id))
-		}))
-		.run(client);
-
-	throw redirect;
 };
