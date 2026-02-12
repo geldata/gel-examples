@@ -95,7 +95,7 @@ class Mutation:
         )
 
         actor = json.loads(actor_json)
-        return Actor(actor.get("name"), actor.get("age"), actor.get("height"))
+        return Actor(name=actor.get("name"), age=actor.get("age"), height=actor.get("height"))
 
     @strawberry.mutation
     async def update_actors(
@@ -184,7 +184,7 @@ class Mutation:
 
         movie = json.loads(movie_json)
         actors = [Actor(name) for d in movie.get("actors", []) for name in d.values()]
-        return Movie(movie.get("name"), movie.get("year"), actors)
+        return Movie(name=movie.get("name"), year=movie.get("year"), actors=actors)
 
     @strawberry.mutation
     async def update_movies(
@@ -227,7 +227,7 @@ class Mutation:
                 Actor(d.get("name"), d.get("age"), d.get("height"))
                 for d in movie.get("actors", [])
             ]
-            movies[idx] = Movie(movie.get("name"), movie.get("year"), actors)
+            movies[idx] = Movie(name=movie.get("name"), year=movie.get("year"), actors=actors)
         return movies
 
     @strawberry.mutation
@@ -249,7 +249,7 @@ class Mutation:
                 Actor(d.get("name"), d.get("age"), d.get("height"))
                 for d in movie.get("actors", [])
             ]
-            movies[idx] = Movie(movie.get("name"), movie.get("year"), actors)
+            movies[idx] = Movie(name=movie.get("name"), year=movie.get("year"), actors=actors)
         return movies
 
 
